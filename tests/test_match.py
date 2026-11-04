@@ -15,8 +15,12 @@ class FakeProvider(AIProvider):
         return [[1.0, 0.0] for _ in texts]
 
 
-app.dependency_overrides[provider_dep] = lambda: FakeProvider()
 client = TestClient(app)
+
+
+def setup_function():
+    app.dependency_overrides.clear()
+    app.dependency_overrides[provider_dep] = lambda: FakeProvider()
 
 
 def test_health():

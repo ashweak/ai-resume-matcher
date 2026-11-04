@@ -12,6 +12,7 @@ resume-matcher/
 │   ├── main.py              # FastAPI app
 │   ├── config.py            # settings from .env (AI_PROVIDER switch lives here)
 │   ├── api/routes.py        # /api/health, /api/match
+│   ├── api/jobs.py          # /api/jobs (add, list, delete) + /api/jobs/rank (vector search)
 │   ├── providers/
 │   │   ├── base.py          # AIProvider interface (generate_json, embed)
 │   │   ├── gemini.py        # default, free tier
@@ -19,7 +20,8 @@ resume-matcher/
 │   │   └── factory.py       # picks provider from AI_PROVIDER
 │   └── services/
 │       ├── resume_parser.py # PDF/TXT → text
-│       └── matcher.py       # embedding score + LLM analysis
+│       ├── matcher.py       # embedding score + LLM analysis
+│       └── job_store.py     # SQLite store for jobs + embeddings
 ├── tests/test_match.py      # runs with a fake provider (no key, no cost)
 ├── requirements.txt
 └── .env.example
@@ -41,7 +43,7 @@ pytest
 | Phase | What you build | Skill it shows employers |
 |---|---|---|
 | 1 ✅ | Backend skeleton, swappable provider, `/match` endpoint, tests | FastAPI, clean architecture, testing |
-| 2 | Job library: save many job posts, embed them, rank best-fit jobs for a resume | RAG / vector search (pgvector or ChromaDB) |
+| 2 ✅ | Job library: save many job posts, embed them, rank best-fit jobs for a resume | RAG / vector search (pgvector or ChromaDB) |
 | 3 | Frontend: upload page + results dashboard (score, skills chips, suggestions) | Full-stack |
 | 4 | Users & history: login, saved analyses (PostgreSQL) | Auth, databases |
 | 5 | Rate-limit handling: retry with backoff, caching results | Production AI reliability |
