@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_chat_model: str = "gemini-3.8-flash"
     gemini_embed_model: str = "gemini-embedding-001"
+    gemini_fallback_models: str = ""
 
     anthropic_api_key: str = ""
     claude_chat_model: str = "claude-haiku-5-5"
