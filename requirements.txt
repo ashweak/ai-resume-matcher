@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+pydantic-settings
+python-multipart
+google-genai
+pypdf
+pytest
+httpx
+# Optional, only if you switch AI_PROVIDER=claude:
+# anthropic
