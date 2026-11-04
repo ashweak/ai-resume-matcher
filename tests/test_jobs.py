@@ -27,7 +27,7 @@ def make_client():
 
 def test_add_list_delete():
     client = make_client()
-    r = client.post("/api/jobs", json={"title": "Backend Dev", "company": "Acme", "description": "Python APIs"})
+    r = client.post("/api/jobs", data={"title": "Backend Dev", "company": "Acme", "description": "Python APIs"})
     assert r.status_code == 201
     job_id = r.json()["id"]
     assert len(client.get("/api/jobs").json()) == 1
@@ -37,8 +37,8 @@ def test_add_list_delete():
 
 def test_rank_puts_best_fit_first():
     client = make_client()
-    client.post("/api/jobs", json={"title": "UI Designer", "description": "Figma design"})
-    client.post("/api/jobs", json={"title": "Python Dev", "description": "FastAPI python"})
+    client.post("/api/jobs", data={"title": "UI Designer", "description": "Figma design"})
+    client.post("/api/jobs", data={"title": "Python Dev", "description": "FastAPI python"})
     r = client.post(
         "/api/jobs/rank",
         files={"resume": ("resume.txt", b"Python developer", "text/plain")},

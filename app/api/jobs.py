@@ -2,7 +2,6 @@ import os
 from functools import lru_cache
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
-from pydantic import BaseModel
 
 from app.api.routes import provider_dep
 from app.providers.base import AIProvider
@@ -18,19 +17,20 @@ def store_dep() -> JobStore:
     return JobStore(os.getenv("JOBS_DB", "jobs.db"))
 
 
-class JobIn(BaseModel):
-    title: str
-    company: str = ""
-    description: str
-
-
 @router.post("", status_code=201)
-def add_job(job: JobIn, provider: AIProvider = Depends(provider_dep), store: JobStore = Depends(store_dep)):
-    if not job.description.strip():
+def add_job(
+    title: str = Form(...),
+    description: str = Form(...),
+    company: str = Form(""),
+    provider: AIProvider = Depends(provider_dep),
+    store: JobStore = Depends(store_dep),
+):
+    """Form fields, so a multi-line job post can be pasted as-is."""
+    if not description.strip():
         raise HTTPException(400, "Description is empty.")
-    vector = provider.embed([f"{job.title}\n{job.description}"])[0]
-    job_id = store.add(job.title, job.company, job.description, vector)
-    return {"id": job_id, "title": job.title, "company": job.company}
+    vector = provider.embed([f"{title}\n{description}"])[0]
+    job_id = store.add(title, company, description, vector)
+    return {"id": job_id, "title": title, "company": company}
 
 
 @router.get("")
