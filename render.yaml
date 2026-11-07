@@ -1,0 +1,18 @@
+# One-click deploy on Render's free plan: New > Blueprint > pick this repo.
+services:
+  - type: web
+    name: ai-resume-matcher
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false   # you paste the key in the Render dashboard; it is never stored in GitHub
+      - key: AI_PROVIDER
+        value: gemini
+      - key: GEMINI_CHAT_MODEL
+        value: gemini-3.8-flash
+      - key: GEMINI_FALLBACK_MODELS
+        value: gemini-3.5-flash,gemini-flash-lite-latest
+      - key: AI_CALLS_PER_HOUR
+        value: "30"

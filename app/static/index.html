@@ -6,240 +6,334 @@
 <title>AI Resume & Job Matcher</title>
 <style>
   :root {
-    --bg: #f6f7f9; --card: #fff; --ink: #1b1f24; --muted: #667085; --line: #e4e7ec;
+    --bg: #f4f6f9; --card: #fff; --ink: #18202b; --muted: #637083; --line: #e3e7ee;
     --brand: #2f5bea; --brand-soft: #eef2ff;
-    --good: #12805c; --good-bg: #e7f6ef; --mid: #b54708; --mid-bg: #fef4e6; --bad: #b42318; --bad-bg: #fdecea;
+    --good: #12805c; --good-bg: #e6f5ee; --mid: #b54708; --mid-bg: #fdf1e3; --bad: #b42318; --bad-bg: #fcebe9;
+    --radius: 14px;
   }
   * { box-sizing: border-box; }
   body { margin: 0; font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
-  header { background: var(--card); border-bottom: 1px solid var(--line); }
-  header .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
-  h1 { font-size: 18px; margin: 0; } h1 span { color: var(--brand); }
-  .status { font-size: 13px; color: var(--muted); }
-  .intro { padding: 28px 0 8px; } .intro h2 { margin: 0 0 4px; font-size: 22px; } .intro p { margin: 0; color: var(--muted); }
+  button { font: inherit; cursor: pointer; }
+  .hidden { display: none !important; }
 
-  .step { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin: 16px 0; }
-  .step.locked { opacity: .5; pointer-events: none; }
-  .step-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
-  .num { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; }
-  .num.done { background: var(--good); }
-  .step h3 { margin: 2px 0 2px; font-size: 17px; } .step-head p { margin: 0; color: var(--muted); font-size: 14px; }
+  /* Header */
+  header { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  .bar { max-width: 1180px; margin: 0 auto; padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+  .logo i { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; font-style: normal; font-size: 15px; }
+  .status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--st, #aab); }
 
-  .drop { display: block; border: 2px dashed var(--line); border-radius: 12px; padding: 22px; text-align: center; cursor: pointer; color: var(--muted); }
-  .drop:hover { border-color: var(--brand); background: var(--brand-soft); }
-  .drop b { color: var(--brand); } .drop input { display: none; }
-  .file-ok { display: flex; align-items: center; justify-content: space-between; background: var(--good-bg); color: var(--good); padding: 12px 14px; border-radius: 10px; font-weight: 600; }
+  /* Layout */
+  .layout { max-width: 1180px; margin: 0 auto; padding: 24px 20px 48px; display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
+  .side { display: grid; gap: 16px; position: sticky; top: 84px; }
+  .layout > * { min-width: 0; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .side { position: static; } }
+  @media (max-width: 600px) { header { position: static; } .bar, .layout { padding-left: 16px; padding-right: 16px; } .logo { font-size: 15px; } .status { font-size: 12px; } }
 
-  label { display: block; font-weight: 600; font-size: 13px; margin: 12px 0 6px; }
-  input[type=text], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; color: var(--ink); background: #fff; }
-  textarea { min-height: 140px; resize: vertical; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .btn { display: inline-block; margin-top: 14px; background: var(--brand); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer; }
-  .btn.big { width: 100%; padding: 14px; font-size: 16px; }
-  .btn.light { background: var(--brand-soft); color: var(--brand); }
-  .btn.link { background: none; color: var(--muted); padding: 4px 6px; margin: 0; font-weight: 500; text-decoration: underline; }
-  .btn:disabled { opacity: .6; cursor: wait; }
-  .error { color: var(--bad); background: var(--bad-bg); padding: 10px 12px; border-radius: 8px; margin-top: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .card-head h2 { font-size: 15px; margin: 0; display: flex; align-items: center; gap: 8px; }
+  .step { width: 22px; height: 22px; border-radius: 50%; background: var(--line); color: var(--muted); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  .step.done { background: var(--good); color: #fff; }
+  .badge { background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+  .muted { color: var(--muted); font-size: 13px; }
 
-  .saved { list-style: none; padding: 0; margin: 14px 0 0; }
-  .saved li { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; margin-top: 8px; }
-  .saved small { color: var(--muted); }
+  /* Buttons */
+  .btn { border: 0; border-radius: 8px; padding: 9px 14px; font-weight: 600; background: var(--brand); color: #fff; }
+  .btn.soft { background: var(--brand-soft); color: var(--brand); }
+  .btn.text { background: none; color: var(--brand); padding: 0; font-weight: 500; }
+  .btn.text.red { color: var(--bad); }
+  .btn.full { width: 100%; padding: 12px; }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
 
-  .legend { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
-  .result { border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 12px; }
-  .result-top { display: flex; align-items: center; gap: 14px; }
-  .pct { flex: none; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 17px; }
-  .result h4 { margin: 0; font-size: 16px; } .result small { color: var(--muted); }
-  .verdict { display: inline-block; margin-top: 4px; font-size: 13px; font-weight: 600; padding: 2px 10px; border-radius: 99px; }
-  .details { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
-  .details h5 { margin: 12px 0 6px; font-size: 14px; } .details h5:first-child { margin-top: 0; }
+  /* Resume */
+  .drop { display: block; border: 2px dashed var(--line); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; color: var(--muted); font-size: 14px; }
+  .drop:hover, .drop.over { border-color: var(--brand); background: var(--brand-soft); }
+  .drop b { color: var(--brand); display: block; } .drop input { display: none; }
+  .file { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--good-bg); }
+  .file span { flex: 1; font-weight: 600; color: var(--good); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .alt { margin-top: 10px; text-align: center; font-size: 13px; color: var(--muted); }
+
+  /* Jobs */
+  .form { display: grid; gap: 10px; margin-bottom: 12px; padding: 14px; border-radius: 10px; background: var(--bg); }
+  .form label { font-size: 12px; font-weight: 600; display: grid; gap: 4px; }
+  .form input, .form textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-weight: 400; background: #fff; color: var(--ink); }
+  .form textarea { min-height: 130px; resize: vertical; }
+  .form .actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .jobs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 300px; overflow-y: auto; }
+  .jobs li { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; }
+  .jobs li div { flex: 1; min-width: 0; }
+  .jobs b, .jobs small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jobs small { color: var(--muted); }
+  .empty { text-align: center; padding: 14px; color: var(--muted); font-size: 14px; }
+
+  .error { color: var(--bad); background: var(--bad-bg); padding: 9px 12px; border-radius: 8px; font-size: 14px; }
+
+  /* Results */
+  .main-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .main-head h1 { margin: 0; font-size: 22px; } .main-head p { margin: 2px 0 0; }
+  .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px; }
+  .how div { background: var(--bg); border-radius: 10px; padding: 14px; }
+  .how b { display: block; margin-bottom: 2px; }
+  @media (max-width: 600px) { .how { grid-template-columns: 1fr; } }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+  .stat small { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .stat div { font-size: 22px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  .result { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+  .result-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+  .rank { color: var(--muted); font-weight: 700; width: 18px; }
+  .pct { flex: none; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; }
+  .result-row .info { flex: 1; min-width: 0; }
+  .result-row h3 { margin: 0; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 9px; border-radius: 99px; margin-top: 3px; }
+  .details { border-top: 1px solid var(--line); padding: 16px; display: grid; gap: 14px; background: #fcfcfd; }
+  .details h4 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
   .details p { margin: 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .two { grid-template-columns: 1fr; } .stat { padding: 10px; } .stat div { font-size: 17px; } .result-row { gap: 10px; padding: 12px; } .pct { width: 48px; height: 48px; font-size: 14px; } }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip { padding: 3px 10px; border-radius: 99px; font-size: 13px; }
   .chip.good { background: var(--good-bg); color: var(--good); } .chip.bad { background: var(--bad-bg); color: var(--bad); }
   .details ol { margin: 0; padding-left: 20px; } .details li { margin-bottom: 4px; }
-  .hidden { display: none !important; }
-  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 16px 0 40px; }
-  @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding-bottom: 32px; }
 </style>
 </head>
 <body>
-<header><div class="wrap">
-  <h1>AI Resume <span>&amp;</span> Job Matcher</h1>
-  <div class="status" id="status">Checking…</div>
+<header><div class="bar">
+  <div class="logo"><i>AI</i>Resume &amp; Job Matcher</div>
+  <div class="status" id="status">Connecting…</div>
 </div></header>
 
-<main class="wrap">
-  <div class="intro">
-    <h2>Find out which jobs fit you</h2>
-    <p>Three steps: upload your resume, add job posts you like, then let the AI compare them.</p>
-  </div>
+<div class="layout">
+  <!-- LEFT: inputs -->
+  <aside class="side">
+    <section class="card">
+      <div class="card-head"><h2><span class="step" id="s1">1</span>Your resume</h2></div>
+      <label class="drop" id="drop"><input type="file" id="resume" accept=".pdf,.txt">
+        <b>Upload resume</b>PDF or TXT, drag &amp; drop or click</label>
+      <div class="file hidden" id="file"><span id="file-name"></span>
+        <button class="btn text" id="change">Change</button></div>
+      <div class="alt" id="sample-resume-wrap">No resume handy? <button class="btn text" id="sample-resume">Use a sample</button></div>
+    </section>
 
-  <!-- STEP 1 -->
-  <section class="step" id="step1">
-    <div class="step-head"><div class="num" id="n1">1</div>
-      <div><h3>Upload your resume</h3><p>PDF or TXT. You only do this once.</p></div></div>
-    <label class="drop" id="drop"><input type="file" id="resume" accept=".pdf,.txt">
-      <b>Click to choose your resume</b><br>or drag the file here</label>
-    <div class="file-ok hidden" id="file-ok"><span id="file-name"></span>
-      <button class="btn link" id="change-file">Change</button></div>
-  </section>
-
-  <!-- STEP 2 -->
-  <section class="step" id="step2">
-    <div class="step-head"><div class="num" id="n2">2</div>
-      <div><h3>Add job posts</h3><p>Copy a job post from JobStreet, LinkedIn or Indeed and paste it here. Add as many as you like.</p></div></div>
-    <form id="job-form">
-      <div class="row">
-        <div><label>Job title</label><input type="text" name="title" placeholder="e.g. Junior Web Developer" required></div>
-        <div><label>Company <small>(optional)</small></label><input type="text" name="company" placeholder="e.g. Accenture"></div>
+    <section class="card">
+      <div class="card-head">
+        <h2><span class="step" id="s2">2</span>Job posts <span class="badge" id="count">0</span></h2>
+        <button class="btn soft" id="open-form">+ Add job</button>
       </div>
-      <label>Job post</label>
-      <textarea name="description" placeholder="Paste the full job description here…" required></textarea>
-      <button class="btn light">+ Add this job</button>
-      <div class="error hidden"></div>
-    </form>
-    <ul class="saved" id="saved"></ul>
-  </section>
+      <form class="form hidden" id="job-form">
+        <label>Job title<input name="title" placeholder="e.g. Junior Web Developer" required maxlength="200"></label>
+        <label>Company (optional)<input name="company" placeholder="e.g. Accenture" maxlength="200"></label>
+        <label>Job post<textarea name="description" placeholder="Paste the full job post from JobStreet, LinkedIn or Indeed…" required></textarea></label>
+        <div class="error hidden"></div>
+        <div class="actions"><button type="button" class="btn text" id="cancel">Cancel</button><button class="btn">Save job</button></div>
+      </form>
+      <ul class="jobs" id="jobs"></ul>
+    </section>
+  </aside>
 
-  <!-- STEP 3 -->
-  <section class="step locked" id="step3">
-    <div class="step-head"><div class="num">3</div>
-      <div><h3>See your results</h3><p id="step3-hint">Finish steps 1 and 2 first.</p></div></div>
-    <button class="btn big" id="check">Check my fit</button>
-    <div class="error hidden" id="check-error"></div>
-    <div id="results" class="hidden">
-      <div class="legend">
-        <span><i class="dot" style="background:var(--good)"></i>Strong match: apply now</span>
-        <span><i class="dot" style="background:var(--mid)"></i>Fair match: improve your resume first</span>
-        <span><i class="dot" style="background:var(--bad)"></i>Weak match: not a good fit yet</span>
-      </div>
-      <div id="result-list"></div>
+  <!-- RIGHT: results -->
+  <main>
+    <div class="main-head">
+      <div><h1>Your job matches</h1><p class="muted" id="hint">Add your resume and at least one job to start.</p></div>
+      <button class="btn" id="check" disabled>Check my fit</button>
     </div>
-  </section>
-</main>
+    <div class="error hidden" id="check-error" style="margin-bottom:16px"></div>
 
+    <section class="card" id="intro">
+      <h2 style="margin:0 0 4px;font-size:16px">How it works</h2>
+      <p class="muted" style="margin:0">The AI reads your resume and each job post, then tells you how well they fit.</p>
+      <div class="how">
+        <div><b>1. Upload</b><span class="muted">your resume on the left.</span></div>
+        <div><b>2. Add jobs</b><span class="muted">you're interested in.</span></div>
+        <div><b>3. Check</b><span class="muted">your fit, then open each job for tips.</span></div>
+      </div>
+    </section>
+
+    <section id="results" class="hidden">
+      <div class="stats">
+        <div class="stat"><small>Jobs checked</small><div id="st-count">0</div></div>
+        <div class="stat"><small>Best match</small><div id="st-best">–</div></div>
+        <div class="stat"><small>Strong matches</small><div id="st-strong">0</div></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--good)"></i>Strong: apply now</span>
+        <span><i style="background:var(--mid)"></i>Fair: improve your resume first</span>
+        <span><i style="background:var(--bad)"></i>Weak: not a good fit yet</span>
+      </div>
+      <div id="list"></div>
+    </section>
+  </main>
+</div>
 <footer>Built with FastAPI + Google Gemini · <a href="/docs">API docs</a></footer>
 
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-let resumeFile = null, jobs = [];
 
-// Similarity scores from embeddings run high, so the bands start at 65.
-function verdict(score) {
-  if (score >= 80) return { text: "Strong match", c: "var(--good)", bg: "var(--good-bg)" };
-  if (score >= 65) return { text: "Fair match", c: "var(--mid)", bg: "var(--mid-bg)" };
-  return { text: "Weak match", c: "var(--bad)", bg: "var(--bad-bg)" };
-}
+// Anonymous id so each visitor only sees their own saved jobs.
+let clientId;
+try { clientId = localStorage.getItem("cid") || crypto.randomUUID(); localStorage.setItem("cid", clientId); }
+catch { clientId = crypto.randomUUID(); }
 
-function refresh() {
-  $("#n1").classList.toggle("done", !!resumeFile);
-  $("#n2").classList.toggle("done", jobs.length > 0);
-  const ready = resumeFile && jobs.length;
-  $("#step3").classList.toggle("locked", !ready);
-  $("#step3-hint").textContent = ready
-    ? `The AI will compare your resume with your ${jobs.length} saved job${jobs.length > 1 ? "s" : ""}.`
-    : "Finish steps 1 and 2 first.";
-}
-
-// STEP 1: resume
-function setResume(file) {
-  if (!file) return;
-  if (!/\.(pdf|txt)$/i.test(file.name)) { alert("Please choose a PDF or TXT file."); return; }
-  resumeFile = file;
-  $("#file-name").textContent = "✓ " + file.name;
-  $("#drop").classList.add("hidden"); $("#file-ok").classList.remove("hidden");
-  $("#results").classList.add("hidden");
-  refresh();
-}
-$("#resume").onchange = e => setResume(e.target.files[0]);
-$("#change-file").onclick = () => { $("#resume").value = ""; $("#resume").click(); };
-const drop = $("#drop");
-drop.ondragover = e => { e.preventDefault(); drop.style.borderColor = "var(--brand)"; };
-drop.ondragleave = () => drop.style.borderColor = "";
-drop.ondrop = e => { e.preventDefault(); drop.style.borderColor = ""; setResume(e.dataTransfer.files[0]); };
-
-// STEP 2: jobs
-async function loadJobs() {
-  jobs = await fetch("/api/jobs").then(r => r.json()).catch(() => []);
-  $("#saved").innerHTML = jobs.map(j => `
-    <li><div><b>${esc(j.title)}</b> <small>${esc(j.company)}</small></div>
-    <button class="btn link" data-id="${j.id}">Remove</button></li>`).join("");
-  document.querySelectorAll("#saved [data-id]").forEach(b => b.onclick = async () => {
-    await fetch("/api/jobs/" + b.dataset.id, { method: "DELETE" }); loadJobs();
-  });
-  refresh();
-}
-$("#job-form").onsubmit = async e => {
-  e.preventDefault();
-  const form = e.target, btn = form.querySelector(".btn"), err = form.querySelector(".error");
-  btn.disabled = true; btn.textContent = "Adding…"; err.classList.add("hidden");
-  try {
-    const r = await fetch("/api/jobs", { method: "POST", body: new FormData(form) });
-    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || "Could not add the job. Try again.");
-    form.reset(); await loadJobs();
-  } catch (x) { err.textContent = x.message; err.classList.remove("hidden"); }
-  finally { btn.disabled = false; btn.textContent = "+ Add this job"; }
-};
-
-// STEP 3: results
-async function post(url, data) {
-  const r = await fetch(url, { method: "POST", body: data });
+async function api(url, opts = {}) {
+  const r = await fetch(url, { ...opts, headers: { "X-Client-Id": clientId, ...(opts.headers || {}) } });
+  if (r.status === 204) return null;
   const body = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(body.detail || "Something went wrong. Please try again in a minute.");
+  if (!r.ok) throw new Error(typeof body.detail === "string" ? body.detail : "Something went wrong. Please try again.");
   return body;
 }
 
-$("#check").onclick = async () => {
-  const btn = $("#check"), err = $("#check-error");
-  btn.disabled = true; btn.textContent = "AI is comparing…"; err.classList.add("hidden");
-  try {
-    const fd = new FormData(); fd.append("resume", resumeFile); fd.append("top_k", "50");
-    const ranked = await post("/api/jobs/rank", fd);
-    $("#result-list").innerHTML = ranked.map((j, i) => {
-      const v = verdict(j.score);
-      return `<div class="result" data-id="${j.id}">
-        <div class="result-top">
-          <div class="pct" style="background:${v.bg};color:${v.c}">${Math.round(j.score)}%</div>
-          <div style="flex:1"><h4>${i + 1}. ${esc(j.title)}</h4><small>${esc(j.company)}</small><br>
-            <span class="verdict" style="background:${v.bg};color:${v.c}">${v.text}</span></div>
-          <button class="btn light" style="margin:0">Why?</button>
-        </div>
-        <div class="details hidden"></div>
-      </div>`;
-    }).join("");
-    document.querySelectorAll(".result").forEach(el => el.querySelector("button").onclick = () => explain(el));
-    $("#results").classList.remove("hidden");
-  } catch (x) { err.textContent = x.message; err.classList.remove("hidden"); }
-  finally { btn.disabled = false; btn.textContent = "Check my fit"; }
-};
+// Similarity scores from embeddings run high, so the bands start at 65.
+const verdict = s => s >= 80 ? ["Strong match", "good"] : s >= 65 ? ["Fair match", "mid"] : ["Weak match", "bad"];
 
-async function explain(el) {
-  const box = el.querySelector(".details"), btn = el.querySelector("button");
-  if (box.innerHTML) { box.classList.toggle("hidden"); return; }
-  const job = jobs.find(j => j.id == el.dataset.id);
-  btn.disabled = true; btn.textContent = "Thinking…";
-  try {
-    const fd = new FormData(); fd.append("resume", resumeFile); fd.append("job_post", job.description);
-    const d = await post("/api/match", fd);
-    const chips = (l, c) => (l || []).map(s => `<span class="chip ${c}">${esc(s)}</span>`).join("") || "<small>None</small>";
-    box.innerHTML = `
-      <h5>In short</h5><p>${esc(d.summary)}</p>
-      <h5>✅ Skills you already have</h5><div class="chips">${chips(d.matched_skills, "good")}</div>
-      <h5>❌ Skills this job wants that your resume is missing</h5><div class="chips">${chips(d.missing_skills, "bad")}</div>
-      <h5>💡 How to improve your resume for this job</h5><ol>${(d.suggestions || []).map(s => `<li>${esc(s)}</li>`).join("")}</ol>`;
-    box.classList.remove("hidden"); btn.textContent = "Hide";
-    btn.onclick = () => { box.classList.toggle("hidden"); btn.textContent = box.classList.contains("hidden") ? "Why?" : "Hide"; };
-  } catch (x) { box.innerHTML = `<div class="error">${esc(x.message)}</div>`; box.classList.remove("hidden"); btn.textContent = "Why?"; }
-  finally { btn.disabled = false; }
+let resume = null, jobs = [];
+
+function refresh() {
+  $("#s1").classList.toggle("done", !!resume);
+  $("#s2").classList.toggle("done", jobs.length > 0);
+  $("#count").textContent = jobs.length;
+  const ready = resume && jobs.length;
+  $("#check").disabled = !ready;
+  $("#hint").textContent = !resume ? "Step 1: upload your resume on the left."
+    : !jobs.length ? "Step 2: add at least one job post on the left."
+    : `Ready. Click "Check my fit" to compare your resume with ${jobs.length} job${jobs.length > 1 ? "s" : ""}.`;
 }
 
-fetch("/api/health").then(r => r.json())
-  .then(d => $("#status").textContent = "● Online · AI: " + d.provider)
-  .catch(() => $("#status").textContent = "Server offline");
+// ---- Resume ----
+function setResume(file) {
+  if (!file) return;
+  if (!/\.(pdf|txt)$/i.test(file.name)) { alert("Please choose a PDF or TXT file."); return; }
+  resume = file;
+  $("#file-name").textContent = "✓ " + file.name;
+  $("#drop").classList.add("hidden"); $("#sample-resume-wrap").classList.add("hidden");
+  $("#file").classList.remove("hidden");
+  $("#results").classList.add("hidden"); $("#intro").classList.remove("hidden");
+  refresh();
+}
+$("#resume").onchange = e => setResume(e.target.files[0]);
+$("#change").onclick = () => { $("#resume").value = ""; $("#resume").click(); };
+const drop = $("#drop");
+drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+drop.ondragleave = () => drop.classList.remove("over");
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); setResume(e.dataTransfer.files[0]); };
+
+const SAMPLE_RESUME = `Juan Dela Cruz, BS Information Technology graduate.
+Skills: HTML, CSS, JavaScript, PHP, Laravel, MySQL, Python, Git, Figma.
+Projects: built a Laravel inventory system with MySQL; built a responsive portfolio website; made an Android app in Java.
+Experience: IT intern, set up office computers and helped maintain the company website.`;
+$("#sample-resume").onclick = () => setResume(new File([SAMPLE_RESUME], "sample-resume.txt", { type: "text/plain" }));
+
+// ---- Jobs ----
+function renderJobs() {
+  $("#jobs").innerHTML = jobs.length ? jobs.map(j => `
+    <li><div><b>${esc(j.title)}</b><small>${esc(j.company || "—")}</small></div>
+    <button class="btn text red" data-del="${j.id}">Remove</button></li>`).join("")
+    : `<li class="empty">No jobs yet.<br><button class="btn text" id="sample-jobs">Add 3 sample jobs</button></li>`;
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+    await api("/api/jobs/" + b.dataset.del, { method: "DELETE" }).catch(() => {});
+    loadJobs();
+  });
+  const s = $("#sample-jobs"); if (s) s.onclick = addSampleJobs;
+  refresh();
+}
+async function loadJobs() { jobs = await api("/api/jobs").catch(() => []); renderJobs(); }
+
+function showForm(show) {
+  $("#job-form").classList.toggle("hidden", !show); $("#open-form").classList.toggle("hidden", show);
+  if (show) $("#job-form [name=title]").focus();
+}
+$("#open-form").onclick = () => showForm(true);
+$("#cancel").onclick = () => { $("#job-form").reset(); showForm(false); };
+$("#job-form").onsubmit = async e => {
+  e.preventDefault();
+  const form = e.target, btn = form.querySelector("button:not([type])"), err = form.querySelector(".error");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Saving'; err.classList.add("hidden");
+  try { await api("/api/jobs", { method: "POST", body: new FormData(form) }); form.reset(); showForm(false); await loadJobs(); }
+  catch (x) { err.textContent = x.message; err.classList.remove("hidden"); }
+  finally { btn.disabled = false; btn.textContent = "Save job"; }
+};
+
+const SAMPLE_JOBS = [
+  ["Junior Web Developer", "Sample Tech Inc.", "Build and maintain web apps using PHP/Laravel, MySQL, HTML, CSS and JavaScript. Knowledge of Git and REST APIs. Fresh graduates welcome."],
+  ["Data Analyst Trainee", "Sample Analytics Co.", "Clean and analyze data using SQL, Excel and Power BI. Create dashboards and reports. Basic Python is a plus."],
+  ["UI/UX Designer", "Sample Studio", "Design user interfaces and prototypes in Figma. Conduct user research and usability testing. Portfolio required."],
+];
+async function addSampleJobs() {
+  const b = $("#sample-jobs"); b.disabled = true; b.innerHTML = '<span class="spinner"></span>Adding';
+  for (const [title, company, description] of SAMPLE_JOBS) {
+    const fd = new FormData(); fd.append("title", title); fd.append("company", company); fd.append("description", description);
+    await api("/api/jobs", { method: "POST", body: fd }).catch(x => alert(x.message));
+  }
+  loadJobs();
+}
+
+// ---- Results ----
+$("#check").onclick = async () => {
+  const btn = $("#check"), err = $("#check-error");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Checking'; err.classList.add("hidden");
+  try {
+    const fd = new FormData(); fd.append("resume", resume); fd.append("top_k", "100");
+    const ranked = await api("/api/jobs/rank", { method: "POST", body: fd });
+    $("#st-count").textContent = ranked.length;
+    $("#st-best").textContent = ranked[0] ? Math.round(ranked[0].score) + "%" : "–";
+    $("#st-best").title = ranked[0] ? ranked[0].title : "";
+    $("#hint").textContent = "Click \"See details\" on a job to see what you have, what you're missing, and how to improve.";
+    $("#st-strong").textContent = ranked.filter(r => r.score >= 80).length;
+    $("#list").innerHTML = ranked.map((j, i) => {
+      const [label, k] = verdict(j.score);
+      return `<article class="result" data-id="${j.id}">
+        <div class="result-row">
+          <span class="rank">${i + 1}</span>
+          <div class="pct" style="background:var(--${k}-bg);color:var(--${k})">${Math.round(j.score)}%</div>
+          <div class="info"><h3>${esc(j.title)}</h3><span class="muted">${esc(j.company || "")}</span><br>
+            <span class="pill" style="background:var(--${k}-bg);color:var(--${k})">${label}</span></div>
+          <button class="btn soft">See details</button>
+        </div>
+        <div class="details hidden"></div>
+      </article>`;
+    }).join("");
+    document.querySelectorAll(".result").forEach(el => el.querySelector("button").onclick = () => details(el));
+    $("#intro").classList.add("hidden"); $("#results").classList.remove("hidden");
+  } catch (x) { err.textContent = x.message; err.classList.remove("hidden"); }
+  finally { btn.textContent = "Check again"; btn.disabled = !(resume && jobs.length); }
+};
+
+async function details(el) {
+  const box = el.querySelector(".details"), btn = el.querySelector("button");
+  if (box.dataset.loaded) {
+    box.classList.toggle("hidden");
+    btn.textContent = box.classList.contains("hidden") ? "See details" : "Hide details";
+    return;
+  }
+  const job = jobs.find(j => j.id == el.dataset.id);
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>AI is reading';
+  try {
+    const fd = new FormData(); fd.append("resume", resume); fd.append("job_post", job.description);
+    const d = await api("/api/match", { method: "POST", body: fd });
+    const chips = (l, c) => (l || []).map(s => `<span class="chip ${c}">${esc(s)}</span>`).join("") || '<span class="muted">None</span>';
+    box.innerHTML = `
+      <div><h4>Summary</h4><p>${esc(d.summary)}</p></div>
+      <div class="two">
+        <div><h4>✅ You already have</h4><div class="chips">${chips(d.matched_skills, "good")}</div></div>
+        <div><h4>❌ You're missing</h4><div class="chips">${chips(d.missing_skills, "bad")}</div></div>
+      </div>
+      <div><h4>💡 How to improve your resume</h4><ol>${(d.suggestions || []).map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>`;
+    box.dataset.loaded = 1; box.classList.remove("hidden"); btn.textContent = "Hide details";
+  } catch (x) {
+    box.innerHTML = `<div class="error">${esc(x.message)}</div>`; box.classList.remove("hidden"); btn.textContent = "Try again";
+  } finally { btn.disabled = false; }
+}
+
+api("/api/health")
+  .then(d => { $("#status").textContent = "Online"; $("#status").style.setProperty("--st", "var(--good)"); })
+  .catch(() => { $("#status").textContent = "Server offline"; $("#status").style.setProperty("--st", "var(--bad)"); });
 loadJobs();
 </script>
 </body>

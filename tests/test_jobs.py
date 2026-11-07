@@ -52,3 +52,13 @@ def test_rank_with_no_jobs():
     client = make_client()
     r = client.post("/api/jobs/rank", files={"resume": ("r.txt", b"Python", "text/plain")})
     assert r.status_code == 400
+
+
+def test_each_visitor_sees_only_their_jobs():
+    client = make_client()
+    client.post("/api/jobs", data={"title": "Mine", "description": "python"}, headers={"X-Client-Id": "alice"})
+    client.post("/api/jobs", data={"title": "Theirs", "description": "design"}, headers={"X-Client-Id": "bob"})
+    alice = client.get("/api/jobs", headers={"X-Client-Id": "alice"}).json()
+    assert [j["title"] for j in alice] == ["Mine"]
+    bob_job = client.get("/api/jobs", headers={"X-Client-Id": "bob"}).json()[0]["id"]
+    assert client.delete(f"/api/jobs/{bob_job}", headers={"X-Client-Id": "alice"}).status_code == 404

@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     claude_chat_model: str = "claude-haiku-5-5"
 
+    # Max AI calls per visitor (IP) per hour; 0 = unlimited. Protects the free quota.
+    ai_calls_per_hour: int = 30
+
 
 @lru_cache
 def get_settings() -> Settings:

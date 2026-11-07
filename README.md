@@ -10,6 +10,8 @@ Upload a resume and paste a job post. The app scores the match with embeddings a
 resume-matcher/
 ├── app/
 │   ├── main.py              # FastAPI app
+│   ├── deps.py              # shared dependencies (AI provider, DB, visitor id, rate limit)
+│   ├── static/index.html    # the web page
 │   ├── config.py            # settings from .env (AI_PROVIDER switch lives here)
 │   ├── api/routes.py        # /api/health, /api/match
 │   ├── api/jobs.py          # /api/jobs (add, list, delete) + /api/jobs/rank (vector search)
@@ -21,7 +23,8 @@ resume-matcher/
 │   └── services/
 │       ├── resume_parser.py # PDF/TXT → text
 │       ├── matcher.py       # embedding score + LLM analysis
-│       └── job_store.py     # SQLite store for jobs + embeddings
+│       ├── job_store.py     # SQLite: jobs + embeddings + AI result cache
+│       └── rate_limit.py    # protects the free AI quota
 ├── tests/test_match.py      # runs with a fake provider (no key, no cost)
 ├── requirements.txt
 └── .env.example
@@ -45,10 +48,18 @@ pytest
 | 1 ✅ | Backend skeleton, swappable provider, `/match` endpoint, tests | FastAPI, clean architecture, testing |
 | 2 ✅ | Job library: save many job posts, embed them, rank best-fit jobs for a resume | RAG / vector search (pgvector or ChromaDB) |
 | 3 ✅ | Frontend: upload page + results dashboard (score, skills chips, suggestions) | Full-stack |
-| 4 | Users & history: login, saved analyses (PostgreSQL) | Auth, databases |
-| 5 | Rate-limit handling: retry with backoff, caching results | Production AI reliability |
-| 6 | Docker + CI (GitHub Actions) + deploy (Render free tier) | DevOps, cloud |
+| 4 ✅ | Private job lists per visitor + saved AI results (SQLite) | Databases, multi-user design |
+| 5 ✅ | Retry + fallback models, result caching, per-visitor rate limit | Production AI reliability |
+| 6 ✅ | Docker + CI (GitHub Actions) + Render blueprint | DevOps, cloud |
 | 7 | Polish: README screenshots, demo video, add to portfolio | Communication |
+
+## Deploy (free, on Render)
+1. Sign in at render.com with GitHub.
+2. **New → Blueprint**, pick this repo. Render reads `render.yaml`.
+3. Paste your `GEMINI_API_KEY` when asked, then **Apply**.
+4. Your live link looks like `https://ai-resume-matcher.onrender.com`.
+
+Free-plan notes: the app sleeps after ~15 min idle (first visit takes ~1 min to wake), and saved jobs reset on each redeploy.
 
 ## Notes
 - Free-tier Gemini data may be used by Google to improve products. Don't upload real personal resumes during testing; use sample ones.
