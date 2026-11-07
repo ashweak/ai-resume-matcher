@@ -26,18 +26,25 @@
   /* Canvas */
   /* Full-width sections; content stays centered at max 1160px */
   .canvas { --gutter: max(40px, calc((100% - 1160px) / 2)); background: var(--card); }
-  .top { background: var(--blush); padding: 28px var(--gutter) 64px; }
+  .top { background: var(--blush); padding: 8px var(--gutter) 64px; }
 
   /* Nav */
-  nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .site-nav { position: sticky; top: 0; z-index: 20; background: rgba(253, 241, 239, .85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+              border-bottom: 1px solid transparent; transition: border-color .2s, background .2s; }
+  .site-nav.scrolled { border-bottom-color: var(--line); background: rgba(255, 255, 255, .9); }
+  nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 72px; padding: 0 var(--gutter); }
+  section[id] { scroll-margin-top: calc(var(--nav-h, 72px) + 12px); }
   .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; text-decoration: none; color: var(--ink); }
   .logo i { width: 42px; height: 42px; border-radius: 12px; background: var(--ink); color: #fff; display: grid; place-items: center; font-style: normal; font-size: 15px; letter-spacing: -.5px; }
-  .links { display: flex; gap: 32px; } .links a { color: var(--ink-2); text-decoration: none; font-weight: 500; } .links a:hover { color: var(--violet); }
+  .links { display: flex; gap: 6px; }
+  .links a { color: var(--ink-2); text-decoration: none; font-weight: 500; padding: 7px 14px; border-radius: 99px; white-space: nowrap; }
+  .links a:hover { color: var(--violet); }
+  .links a.active { background: #fff; color: var(--ink); font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
   .status { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink-2); background: #fff; border: 1px solid var(--line); padding: 8px 14px; border-radius: 99px; }
   .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--st, #bbb); }
 
   /* Hero */
-  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; margin-top: 56px; }
+  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; margin-top: 32px; }
   .hero h1 { font-size: clamp(40px, 6vw, 76px); line-height: 1.02; letter-spacing: -.035em; margin: 0; font-weight: 800; }
   .hero p.lead { color: var(--ink-2); font-size: 17px; max-width: 520px; margin: 24px 0 32px; }
   .cta { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -78,6 +85,24 @@
   .rubric div { text-align: center; }
   .rubric strong { display: block; font-size: 24px; font-weight: 800; }
   .rubric span { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+
+  /* Info sections */
+  .info-sec { padding: 72px var(--gutter) 8px; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .steps article { border: 1px solid var(--line); border-radius: 22px; padding: 22px; position: relative; }
+  .steps .num { background: var(--grad); color: #fff; width: 34px; height: 34px; font-size: 15px; }
+  .steps h3 { margin: 14px 0 6px; font-size: 18px; } .steps p { margin: 0; color: var(--ink-2); }
+  .two-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .two-scores div { background: var(--blush); border-radius: 22px; padding: 20px 22px; }
+  .two-scores b { font-size: 16px; } .two-scores p { margin: 6px 0 0; color: var(--ink-2); }
+  .areas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .areas article { border: 1px solid var(--line); border-radius: 22px; padding: 22px; display: grid; gap: 8px; align-content: start; }
+  .areas .w { font-size: 30px; font-weight: 800; line-height: 1; }
+  .areas h3 { margin: 0; font-size: 17px; } .areas p { margin: 0; color: var(--ink-2); font-size: 14px; }
+  .areas .tip { background: var(--blush); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--ink); }
+  .areas .tip b { color: var(--pink); }
+  .research { margin-top: 16px; font-size: 13px; color: var(--muted); }
+  .research a { color: var(--violet); }
 
   /* App */
   .app { padding: 56px var(--gutter) 64px; }
@@ -124,7 +149,7 @@
   /* Results */
   .run { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 18px 20px; border-radius: 22px; background: var(--blush); margin-bottom: 16px; }
   .run p { margin: 0; font-weight: 600; } .run .muted { font-weight: 400; }
-  .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; } /* empty state inside the app */
   .how div { padding: 18px; border-radius: 18px; border: 1px solid var(--line); }
   .how b { display: block; font-size: 15px; margin: 8px 0 2px; }
   .how .num { background: var(--grad); color: #fff; }
@@ -187,13 +212,19 @@
   @media (max-width: 1000px) {
     .hero { grid-template-columns: 1fr; } .visual { height: 400px; max-width: 520px; width: 100%; margin: 0 auto; }
     .layout { grid-template-columns: 1fr; } .side { position: static; }
-    .rubric { grid-template-columns: repeat(3, 1fr); row-gap: 18px; } .links { display: none; }
+    .rubric { grid-template-columns: repeat(3, 1fr); row-gap: 18px; }
+    nav { flex-wrap: wrap; height: auto; padding-top: 12px; padding-bottom: 10px; row-gap: 8px; }
+    .links { order: 3; width: 100%; overflow-x: auto; scrollbar-width: none; margin: 0 -4px; }
+    .links::-webkit-scrollbar { display: none; }
+    .steps, .areas { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 640px) {
     .canvas { --gutter: 16px; }
     .hero { margin-top: 32px; } .visual { height: 380px; }
     .rubric { grid-template-columns: repeat(2, 1fr); }
-    .how, .two, .checklist { grid-template-columns: 1fr; }
+    .how, .two, .checklist, .steps, .areas, .two-scores { grid-template-columns: 1fr; }
+    .info-sec { padding-top: 56px; }
+    .links { justify-content: space-between; margin: 0; } .links a { padding: 6px 9px; font-size: 14px; }
     .stats { grid-template-columns: repeat(3, 1fr); gap: 8px; } .stat { padding: 10px; } .stat div { font-size: 19px; }
     .result-row { flex-wrap: wrap; gap: 10px; padding: 14px; } .result-row .btn-dark { width: 100%; }
     .scorebox { grid-template-columns: 1fr; justify-items: center; text-align: center; }
@@ -203,14 +234,22 @@
 </head>
 <body>
 <div class="canvas">
-  <!-- ===== HERO ===== -->
-  <div class="top">
+  <!-- ===== NAV (stays at the top while scrolling) ===== -->
+  <header class="site-nav" id="site-nav">
     <nav>
-      <a class="logo" href="#"><i>RM</i>ResuMatch AI</a>
-      <div class="links"><a href="#how">How it works</a><a href="#rubric">What we check</a><a href="#try">Try it</a><a href="#faq">FAQ</a></div>
+      <a class="logo" href="#top"><i>RM</i>ResuMatch AI</a>
+      <div class="links">
+        <a href="#how-it-works">How it works</a>
+        <a href="#what-we-check">What we check</a>
+        <a href="#try">Try it</a>
+        <a href="#faq">FAQ</a>
+      </div>
       <div class="status" id="status">Connecting</div>
     </nav>
+  </header>
 
+  <!-- ===== HERO ===== -->
+  <div class="top" id="top">
     <div class="hero">
       <div>
         <h1><span class="grad-text">AI analysis</span><br>for your resume<br>&amp; dream job</h1>
@@ -244,8 +283,8 @@
     </div>
   </div>
 
-  <!-- ===== RUBRIC STRIP ===== -->
-  <div class="strip" id="rubric">
+  <!-- ===== RUBRIC SUMMARY STRIP ===== -->
+  <div class="strip">
     <p><b>Scored on 6 things recruiters &amp; ATS software check</b>, based on eye-tracking and hiring research</p>
     <div class="rubric">
       <div><strong class="grad-text">30%</strong><span>Skills &amp; keywords</span></div>
@@ -257,8 +296,52 @@
     </div>
   </div>
 
+  <!-- ===== HOW IT WORKS ===== -->
+  <section class="info-sec" id="how-it-works">
+    <div class="section-head"><div><span class="eyebrow grad-text">How it works</span><h2>Three steps to know where you stand</h2>
+      <p>No account needed. Everything happens on this page.</p></div></div>
+    <div class="steps">
+      <article><span class="num">1</span><h3>Upload your resume</h3><p>PDF or TXT. The text is read once to check it, and the file is never saved.</p></article>
+      <article><span class="num">2</span><h3>Add job posts</h3><p>Copy jobs you like from JobStreet, LinkedIn or Indeed and paste them in. Add as many as you want.</p></article>
+      <article><span class="num">3</span><h3>Get scored &amp; improve</h3><p>See which jobs fit you best, then open any job for a full recruiter-style scorecard and a fix list.</p></article>
+    </div>
+    <div class="two-scores">
+      <div><b>⚡ Quick match</b><p>Compares the meaning of your resume with every saved job in seconds, so you know which ones to focus on first.</p></div>
+      <div><b>📋 Recruiter score</b><p>A deeper review of one job: 6 areas scored like a recruiter would, plus missing skills and what to fix first.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== WHAT WE CHECK ===== -->
+  <section class="info-sec" id="what-we-check">
+    <div class="section-head"><div><span class="eyebrow grad-text">What we check</span><h2>The 6 things recruiters look for</h2>
+      <p>Each area gets a 0–10 score with a reason. The weights below turn them into your score out of 100.</p></div></div>
+    <div class="areas">
+      <article><span class="w grad-text">30%</span><h3>Skills &amp; keywords</h3>
+        <p>Recruiters and ATS software scan for the job's exact skills and tools first.</p>
+        <div class="tip"><b>Score higher:</b> use the same words the job post uses, e.g. "Laravel", "REST API".</div></article>
+      <article><span class="w grad-text">25%</span><h3>Experience &amp; projects</h3>
+        <p>Do your jobs, internships and projects show the work this role needs? For fresh grads, projects count.</p>
+        <div class="tip"><b>Score higher:</b> list projects that match the job near the top.</div></article>
+      <article><span class="w grad-text">15%</span><h3>Measurable impact</h3>
+        <p>Bullets that start with action verbs and show results with numbers stand out.</p>
+        <div class="tip"><b>Score higher:</b> "Built a system used by 50 staff" beats "Worked on a system".</div></article>
+      <article><span class="w grad-text">10%</span><h3>Education &amp; certifications</h3>
+        <p>Does your degree, field and any certificates match what the job asks for?</p>
+        <div class="tip"><b>Score higher:</b> add relevant certificates and seminars.</div></article>
+      <article><span class="w grad-text">10%</span><h3>Complete sections</h3>
+        <p>Contact info, LinkedIn, GitHub or portfolio, skills, experience or projects, and education.</p>
+        <div class="tip"><b>Score higher:</b> always include a GitHub or portfolio link for tech roles.</div></article>
+      <article><span class="w grad-text">10%</span><h3>Clear &amp; easy to scan</h3>
+        <p>Recruiters spend about 6 seconds on a first look. Clean, consistent, 1–2 pages wins.</p>
+        <div class="tip"><b>Score higher:</b> short bullets, clear headings, no walls of text.</div></article>
+    </div>
+    <p class="research">Based on <a href="https://www.bu.edu/com/files/2018/10/TheLadders-EyeTracking-StudyC2.pdf" target="_blank" rel="noopener">TheLadders eye-tracking study</a>,
+      <a href="https://ats-screener.vercel.app/docs/scoring/dimensions" target="_blank" rel="noopener">ATS scoring research</a> and
+      <a href="https://career.cornell.edu/blog/2026/01/21/entry-level-software-engineer-resume-what-recruiters-want-to-see/" target="_blank" rel="noopener">Cornell Career Services</a>.</p>
+  </section>
+
   <!-- ===== APP ===== -->
-  <div class="app" id="try">
+  <section class="app" id="try">
     <div class="section-head">
       <div><span class="eyebrow grad-text">Try it</span><h2>Check your fit</h2><p>Upload your resume, add jobs you like, then let the AI compare them.</p></div>
     </div>
@@ -296,13 +379,13 @@
         </div>
         <div class="error hidden" id="check-error" style="margin-bottom:16px"></div>
 
-        <section id="how">
+        <div id="app-empty">
           <div class="how">
             <div><span class="num">1</span><b>Upload</b><span class="muted">Your resume, PDF or TXT. It's read once and never stored.</span></div>
             <div><span class="num">2</span><b>Add jobs</b><span class="muted">Paste job posts you're interested in.</span></div>
             <div><span class="num">3</span><b>Get scored</b><span class="muted">See your best matches, then open one for the full scorecard.</span></div>
           </div>
-        </section>
+        </div>
 
         <section id="results" class="hidden">
           <div class="stats">
@@ -319,10 +402,10 @@
         </section>
       </main>
     </div>
-  </div>
+  </section>
 
   <!-- ===== FAQ ===== -->
-  <div class="faq" id="faq">
+  <section class="faq" id="faq">
     <div class="section-head"><div><span class="eyebrow grad-text">FAQ</span><h2>Good to know</h2></div></div>
     <details><summary>What's the difference between "Quick match" and "Recruiter score"?</summary>
       <p>Quick match compares the meaning of your resume and the job post using AI embeddings. It's instant, and good for ranking many jobs. The Recruiter score is a deeper review: the AI grades 6 areas recruiters and ATS software check, and the app combines them with fixed weights into a score out of 100.</p></details>
@@ -332,7 +415,7 @@
       <p>No. Your file is read to get the text and then discarded. Only the job posts you add are saved, and only you can see them in this browser.</p></details>
     <details><summary>Why does it sometimes take a while?</summary>
       <p>It runs on Google Gemini's free tier. When it's busy the app automatically switches to another model. Results are saved, so opening the same job again is instant.</p></details>
-  </div>
+  </section>
 </div>
 <footer>Built with FastAPI · Google Gemini · SQLite · Docker · <a href="/docs">API docs</a></footer>
 
@@ -376,7 +459,7 @@ function setResume(file) {
   resume = file;
   $("#file-name").textContent = "✓ " + file.name;
   $("#drop").classList.add("hidden"); $("#sample-wrap").classList.add("hidden"); $("#file").classList.remove("hidden");
-  $("#results").classList.add("hidden"); $("#how").classList.remove("hidden");
+  $("#results").classList.add("hidden"); $("#app-empty").classList.remove("hidden");
   refresh();
 }
 $("#resume").onchange = e => setResume(e.target.files[0]);
@@ -482,7 +565,7 @@ $("#check").onclick = async () => {
       </article>`;
     }).join("");
     document.querySelectorAll(".result").forEach(el => el.querySelector("button").onclick = () => details(el));
-    $("#how").classList.add("hidden"); $("#results").classList.remove("hidden");
+    $("#app-empty").classList.add("hidden"); $("#results").classList.remove("hidden");
     $("#hint").textContent = "Open \"Full scorecard\" on a job to see how a recruiter would rate you.";
   } catch (x) { err.textContent = x.message; err.classList.remove("hidden"); }
   finally { btn.innerHTML = '<span class="arrow">→</span>Check again'; btn.disabled = !(resume && jobs.length); }
@@ -549,6 +632,25 @@ async function details(el) {
     box.innerHTML = `<div class="error">${esc(x.message)}</div>`; btn.textContent = "Try again";
   } finally { clearTimeout(slow); btn.disabled = false; }
 }
+
+// ---- Navigation: highlight the section you're looking at ----
+const navLinks = [...document.querySelectorAll(".links a")];
+const watched = navLinks.map(a => document.querySelector(a.getAttribute("href")));
+function markActive() {
+  const y = window.scrollY + $("#site-nav").offsetHeight + 24;
+  let current = null;
+  watched.forEach((sec, i) => { if (sec && sec.offsetTop <= y) current = i; });
+  if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) current = watched.length - 1;
+  navLinks.forEach((a, i) => a.classList.toggle("active", i === current));
+  $("#site-nav").classList.toggle("scrolled", window.scrollY > 8);
+}
+window.addEventListener("scroll", markActive, { passive: true });
+// Sections stop just below the menu, whatever its height (it's taller on phones).
+const setNavH = () => document.documentElement.style.setProperty("--nav-h", $("#site-nav").offsetHeight + "px");
+window.addEventListener("resize", setNavH); setNavH();
+// Logo goes back to the very top.
+$(".logo").onclick = e => { e.preventDefault(); history.replaceState(null, "", location.pathname); window.scrollTo({ top: 0, behavior: "smooth" }); };
+markActive();
 
 api("/api/health")
   .then(() => { $("#status").textContent = "AI online"; $("#status").style.setProperty("--st", "var(--good)"); })
