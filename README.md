@@ -34,7 +34,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env        # add your Gemini key from aistudio.google.com
 uvicorn app.main:app --reload
-# open http://127.0.0.1:8000/docs
+# open http://127.0.0.1:8000  (app)  or  /docs  (API)
 pytest
 ```
 
@@ -44,7 +44,7 @@ pytest
 |---|---|---|
 | 1 ✅ | Backend skeleton, swappable provider, `/match` endpoint, tests | FastAPI, clean architecture, testing |
 | 2 ✅ | Job library: save many job posts, embed them, rank best-fit jobs for a resume | RAG / vector search (pgvector or ChromaDB) |
-| 3 | Frontend: upload page + results dashboard (score, skills chips, suggestions) | Full-stack |
+| 3 ✅ | Frontend: upload page + results dashboard (score, skills chips, suggestions) | Full-stack |
 | 4 | Users & history: login, saved analyses (PostgreSQL) | Auth, databases |
 | 5 | Rate-limit handling: retry with backoff, caching results | Production AI reliability |
 | 6 | Docker + CI (GitHub Actions) + deploy (Render free tier) | DevOps, cloud |

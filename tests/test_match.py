@@ -37,3 +37,9 @@ def test_match():
     body = r.json()
     assert body["match_score"] == 100.0
     assert "Docker" in body["missing_skills"]
+
+
+def test_home_page():
+    r = client.get("/")
+    assert r.status_code == 200
+    assert "AI Resume" in r.text

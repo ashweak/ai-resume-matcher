@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Resume & Job Matcher</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --ink: #1b1f24; --muted: #667085; --line: #e4e7ec;
+    --brand: #2f5bea; --brand-ink: #fff; --good: #12805c; --good-bg: #e7f6ef;
+    --bad: #b42318; --bad-bg: #fdecea; --mid: #b54708;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: var(--card); border-bottom: 1px solid var(--line); }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  h1 { font-size: 18px; margin: 0; }
+  h1 span { color: var(--brand); }
+  .status { font-size: 13px; color: var(--muted); }
+  nav { display: flex; gap: 4px; margin: 24px 0 16px; border-bottom: 1px solid var(--line); }
+  nav button { background: none; border: 0; padding: 10px 14px; font: inherit; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  nav button.active { color: var(--ink); border-color: var(--brand); font-weight: 600; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 16px; margin: 0 0 4px; }
+  .hint { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+  label { display: block; font-weight: 600; font-size: 13px; margin: 12px 0 6px; }
+  input[type=text], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: #fff; color: var(--ink); }
+  textarea { min-height: 160px; resize: vertical; }
+  input[type=file] { font: inherit; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .btn { display: block; margin-top: 16px; background: var(--brand); color: var(--brand-ink); border: 0; border-radius: 8px; padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+  .btn:disabled { opacity: .6; cursor: wait; }
+  .btn.ghost { display: inline-block; background: none; color: var(--bad); padding: 4px 8px; margin: 0; font-weight: 500; }
+  .error { color: var(--bad); background: var(--bad-bg); padding: 10px 12px; border-radius: 8px; margin-top: 12px; }
+  .score { display: flex; align-items: center; gap: 16px; }
+  .ring { --p: 0; width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center; flex: none;
+          background: conic-gradient(var(--c, var(--brand)) calc(var(--p) * 1%), var(--line) 0); }
+  .ring b { width: 70px; height: 70px; border-radius: 50%; background: var(--card); display: grid; place-items: center; font-size: 20px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { padding: 4px 10px; border-radius: 999px; font-size: 13px; }
+  .chip.good { background: var(--good-bg); color: var(--good); }
+  .chip.bad { background: var(--bad-bg); color: var(--bad); }
+  ul.sugg { margin: 0; padding-left: 20px; }
+  ul.sugg li { margin-bottom: 6px; }
+  .jobs { list-style: none; margin: 0; padding: 0; }
+  .jobs li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .jobs li:first-child { border-top: 0; }
+  .jobs small { color: var(--muted); }
+  .bar { width: 220px; height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--brand); }
+  .rank-row { display: flex; align-items: center; gap: 12px; }
+  .rank-row b { width: 52px; text-align: right; }
+  .hidden { display: none; }
+  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 24px 0 40px; }
+  @media (max-width: 640px) { .row { grid-template-columns: 1fr; } .bar { width: 90px; } }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>AI Resume <span>&amp;</span> Job Matcher</h1>
+  <div class="status" id="status">Checking…</div>
+</div></header>
+
+<main class="wrap">
+  <nav>
+    <button class="active" data-tab="match">1. Check one job</button>
+    <button data-tab="jobs">2. My saved jobs</button>
+    <button data-tab="rank">3. Find my best jobs</button>
+  </nav>
+
+  <!-- TAB 1: match one job -->
+  <section id="tab-match">
+    <form class="card" id="match-form">
+      <h2>How well does my resume fit this job?</h2>
+      <p class="hint">Upload your resume (PDF or TXT) and paste a job post. The AI scores the fit and tells you what to improve.</p>
+      <label>Your resume</label>
+      <input type="file" name="resume" accept=".pdf,.txt" required>
+      <label>Job post</label>
+      <textarea name="job_post" placeholder="Paste the full job description here…" required></textarea>
+      <button class="btn">Analyze</button>
+      <div class="error hidden"></div>
+    </form>
+    <div id="match-result" class="hidden"></div>
+  </section>
+
+  <!-- TAB 2: saved jobs -->
+  <section id="tab-jobs" class="hidden">
+    <form class="card" id="job-form">
+      <h2>Save a job post</h2>
+      <p class="hint">Save jobs you're interested in, then use tab 3 to see which ones fit you best.</p>
+      <div class="row">
+        <div><label>Job title</label><input type="text" name="title" placeholder="e.g. Web Developer" required></div>
+        <div><label>Company (optional)</label><input type="text" name="company" placeholder="e.g. Accenture"></div>
+      </div>
+      <label>Job description</label>
+      <textarea name="description" placeholder="Paste the full job description here…" required></textarea>
+      <button class="btn">Save job</button>
+      <div class="error hidden"></div>
+    </form>
+    <div class="card">
+      <h2>Saved jobs</h2>
+      <ul class="jobs" id="job-list"></ul>
+    </div>
+  </section>
+
+  <!-- TAB 3: rank -->
+  <section id="tab-rank" class="hidden">
+    <form class="card" id="rank-form">
+      <h2>Which saved jobs fit me best?</h2>
+      <p class="hint">Upload your resume. Your saved jobs are ranked by how closely they match it.</p>
+      <label>Your resume</label>
+      <input type="file" name="resume" accept=".pdf,.txt" required>
+      <input type="hidden" name="top_k" value="10">
+      <button class="btn">Rank my jobs</button>
+      <div class="error hidden"></div>
+    </form>
+    <div class="card hidden" id="rank-result"><h2>Best matches</h2><ul class="jobs" id="rank-list"></ul></div>
+  </section>
+</main>
+
+<footer>Built with FastAPI + Google Gemini · <a href="/docs">API docs</a></footer>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const color = n => n >= 75 ? "var(--good)" : n >= 50 ? "var(--mid)" : "var(--bad)";
+
+// Tabs
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("active", x === b));
+  document.querySelectorAll("main section").forEach(s => s.classList.toggle("hidden", s.id !== "tab-" + b.dataset.tab));
+  if (b.dataset.tab === "jobs") loadJobs();
+});
+
+// Send a form, show errors, return JSON
+async function send(form, url, method = "POST") {
+  const btn = $(".btn", form), err = $(".error", form), label = btn.textContent;
+  btn.disabled = true; btn.textContent = "Working…"; err.classList.add("hidden");
+  try {
+    const r = await fetch(url, { method, body: new FormData(form) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.detail || "Something went wrong (" + r.status + "). Try again.");
+    return data;
+  } catch (e) {
+    err.textContent = e.message; err.classList.remove("hidden"); return null;
+  } finally { btn.disabled = false; btn.textContent = label; }
+}
+
+// Tab 1
+$("#match-form").onsubmit = async e => {
+  e.preventDefault();
+  const d = await send(e.target, "/api/match");
+  if (!d) return;
+  const box = $("#match-result");
+  const chips = (list, cls) => (list || []).map(s => `<span class="chip ${cls}">${esc(s)}</span>`).join("") || "<span class='hint'>None</span>";
+  box.innerHTML = `
+    <div class="card score">
+      <div class="ring" style="--p:${d.match_score};--c:${color(d.match_score)}"><b>${Math.round(d.match_score)}%</b></div>
+      <div><h2>Match score</h2><p class="hint" style="margin:0">${esc(d.summary)}</p></div>
+    </div>
+    <div class="card"><h2>Skills you have ✅</h2><div class="chips">${chips(d.matched_skills, "good")}</div></div>
+    <div class="card"><h2>Skills to learn ❌</h2><div class="chips">${chips(d.missing_skills, "bad")}</div></div>
+    <div class="card"><h2>How to improve your resume</h2><ul class="sugg">${(d.suggestions || []).map(s => `<li>${esc(s)}</li>`).join("")}</ul></div>`;
+  box.classList.remove("hidden");
+  box.scrollIntoView({ behavior: "smooth" });
+};
+
+// Tab 2
+async function loadJobs() {
+  const list = $("#job-list");
+  const jobs = await fetch("/api/jobs").then(r => r.json()).catch(() => []);
+  list.innerHTML = jobs.length ? jobs.map(j => `
+    <li><div><b>${esc(j.title)}</b><br><small>${esc(j.company || "No company")}</small></div>
+    <button class="btn ghost" data-id="${j.id}">Delete</button></li>`).join("")
+    : "<li class='hint'>No saved jobs yet.</li>";
+  list.querySelectorAll("[data-id]").forEach(b => b.onclick = async () => {
+    await fetch("/api/jobs/" + b.dataset.id, { method: "DELETE" }); loadJobs();
+  });
+}
+$("#job-form").onsubmit = async e => {
+  e.preventDefault();
+  if (await send(e.target, "/api/jobs")) { e.target.reset(); loadJobs(); }
+};
+
+// Tab 3
+$("#rank-form").onsubmit = async e => {
+  e.preventDefault();
+  const d = await send(e.target, "/api/jobs/rank");
+  if (!d) return;
+  $("#rank-list").innerHTML = d.map((j, i) => `
+    <li><div><b>${i + 1}. ${esc(j.title)}</b><br><small>${esc(j.company || "")}</small></div>
+    <div class="rank-row"><div class="bar"><i style="width:${j.score}%;background:${color(j.score)}"></i></div><b>${j.score}%</b></div></li>`).join("");
+  $("#rank-result").classList.remove("hidden");
+};
+
+// Status
+fetch("/api/health").then(r => r.json())
+  .then(d => $("#status").textContent = "● Online · AI: " + d.provider)
+  .catch(() => $("#status").textContent = "Server offline");
+</script>
+</body>
+</html>
