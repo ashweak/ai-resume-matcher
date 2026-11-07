@@ -33,7 +33,7 @@ async def match(
         raise HTTPException(400, "Job post is empty.")
 
     # Same resume + same job = same answer, so reuse it instead of calling the AI again.
-    key = hashlib.sha256(f"{settings.ai_provider}\n{text}\n{job_post}".encode()).hexdigest()
+    key = hashlib.sha256(f"v2\n{settings.ai_provider}\n{text}\n{job_post}".encode()).hexdigest()
     if cached := store.cache_get(key):
         return {**cached, "cached": True}
 

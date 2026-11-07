@@ -1,8 +1,31 @@
-# AI Resume & Job Matcher
+# ResuMatch AI: Resume & Job Matcher
 
 Upload a resume and paste a job post. The app scores the match with embeddings and uses an LLM to list matched skills, missing skills, and resume fixes.
 
 **Stack:** FastAPI · Google Gemini (free tier) · swappable AI provider (Gemini / Claude)
+
+## How resumes are scored
+
+Two scores, for two jobs:
+
+- **Quick match** (instant): embedding similarity between the resume and each saved job, used to rank many jobs at once.
+- **Recruiter score** (0–100): the AI grades 6 areas from 0–10 with a reason. The app then applies fixed weights in code, so the AI can't invent the total.
+
+| Area | Weight | Why it matters |
+|---|---|---|
+| Skills & keywords | 30% | Recruiters and ATS software scan for the job's keywords first |
+| Relevant experience & projects | 25% | Projects stand in for experience at entry level |
+| Measurable impact | 15% | Bullets with numbers show results, not just duties |
+| Education & certifications | 10% | Degree/field fit; weighted the same on major ATS platforms |
+| Complete sections | 10% | Contact, LinkedIn/GitHub, skills, experience/projects, education |
+| Clear & easy to scan | 10% | Recruiters spend ~6 seconds on a first look |
+
+Facts such as contact info, sections, action-verb bullets and bullets with numbers are measured by code (`app/services/resume_checks.py`) and given to the AI, so its scores stay grounded in the real resume.
+
+Research used:
+- [TheLadders eye-tracking study](https://www.bu.edu/com/files/2018/10/TheLadders-EyeTracking-StudyC2.pdf) (6-second scan, what recruiters look at)
+- [ATS scoring dimensions and weights](https://ats-screener.vercel.app/docs/scoring/dimensions)
+- [Cornell Career Services: entry-level software engineer resumes](https://career.cornell.edu/blog/2026/01/21/entry-level-software-engineer-resume-what-recruiters-want-to-see/)
 
 ## Project structure
 
@@ -22,7 +45,8 @@ resume-matcher/
 │   │   └── factory.py       # picks provider from AI_PROVIDER
 │   └── services/
 │       ├── resume_parser.py # PDF/TXT → text
-│       ├── matcher.py       # embedding score + LLM analysis
+│       ├── matcher.py       # quick match + recruiter scorecard (rubric + weights)
+│       ├── resume_checks.py # rule-based facts: contact, sections, bullets, numbers
 │       ├── job_store.py     # SQLite: jobs + embeddings + AI result cache
 │       └── rate_limit.py    # protects the free AI quota
 ├── tests/test_match.py      # runs with a fake provider (no key, no cost)

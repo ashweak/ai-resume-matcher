@@ -3,179 +3,339 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Resume & Job Matcher</title>
+<title>ResuMatch AI: Resume & Job Matcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4f6f9; --card: #fff; --ink: #18202b; --muted: #637083; --line: #e3e7ee;
-    --brand: #2f5bea; --brand-soft: #eef2ff;
-    --good: #12805c; --good-bg: #e6f5ee; --mid: #b54708; --mid-bg: #fdf1e3; --bad: #b42318; --bad-bg: #fcebe9;
-    --radius: 14px;
+    --ink: #15121f; --ink-2: #3d3a4a; --muted: #75707f; --line: #ece4e4;
+    --blush: #fdf1ef; --card: #fff;
+    --violet: #7c3aed; --pink: #c3509f; --orange: #f0884b;
+    --grad: linear-gradient(90deg, var(--violet), var(--pink) 55%, var(--orange));
+    --good: #138a5f; --good-bg: #e5f6ee; --mid: #b45309; --mid-bg: #fdf0e1; --bad: #c0352b; --bad-bg: #fdeceb;
+    --shadow: 0 1px 2px rgba(30, 15, 40, .04), 0 12px 32px -12px rgba(60, 20, 70, .18);
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font: 15px/1.55 "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink);
+         background: linear-gradient(135deg, #6d35e0 0%, #b04fa8 45%, #ee8a4f 100%) fixed; padding: 40px 24px; }
   button { font: inherit; cursor: pointer; }
   .hidden { display: none !important; }
+  .grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
-  /* Header */
-  header { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
-  .bar { max-width: 1180px; margin: 0 auto; padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
-  .logo i { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: #fff; display: grid; place-items: center; font-style: normal; font-size: 15px; }
-  .status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--st, #aab); }
+  /* Canvas */
+  .canvas { max-width: 1240px; margin: 0 auto; background: var(--card); border-radius: 32px; overflow: hidden; box-shadow: 0 30px 80px -30px rgba(40, 10, 60, .55); }
+  .top { background: var(--blush); padding: 28px 40px 56px; }
 
-  /* Layout */
-  .layout { max-width: 1180px; margin: 0 auto; padding: 24px 20px 48px; display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
-  .side { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; position: sticky; top: 84px; }
-  .side .card { min-width: 0; }
+  /* Nav */
+  nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; text-decoration: none; color: var(--ink); }
+  .logo i { width: 42px; height: 42px; border-radius: 12px; background: var(--ink); color: #fff; display: grid; place-items: center; font-style: normal; font-size: 15px; letter-spacing: -.5px; }
+  .links { display: flex; gap: 32px; } .links a { color: var(--ink-2); text-decoration: none; font-weight: 500; } .links a:hover { color: var(--violet); }
+  .status { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink-2); background: #fff; border: 1px solid var(--line); padding: 8px 14px; border-radius: 99px; }
+  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--st, #bbb); }
+
+  /* Hero */
+  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; margin-top: 56px; }
+  .hero h1 { font-size: clamp(40px, 6vw, 76px); line-height: 1.02; letter-spacing: -.035em; margin: 0; font-weight: 800; }
+  .hero p.lead { color: var(--ink-2); font-size: 17px; max-width: 520px; margin: 24px 0 32px; }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn-grad { display: inline-flex; align-items: center; gap: 10px; border: 0; color: #fff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 16px; background: var(--grad);
+              box-shadow: 0 0 0 4px rgba(255,255,255,.7), 0 0 0 5px rgba(195, 80, 159, .25), 0 10px 24px -8px rgba(124, 58, 237, .6); text-decoration: none; }
+  .btn-grad .arrow { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.85); display: grid; place-items: center; font-size: 13px; }
+  .btn-line { border: 1.5px solid #ddd2d2; background: transparent; color: var(--ink); font-weight: 600; font-size: 16px; padding: 13px 24px; border-radius: 16px; }
+  .btn-line:hover { background: #fff; }
+  .ticks { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 28px; font-size: 13px; color: var(--ink-2); }
+  .ticks span::before { content: "◦ "; color: var(--muted); }
+
+  /* Hero visual */
+  .visual { position: relative; height: 440px; }
+  .float { position: absolute; background: #fff; border-radius: 20px; box-shadow: var(--shadow); }
+  .v-main { left: 16%; right: 10%; top: 44px; background: #0f0d16; color: #fff; padding: 22px; border-radius: 24px; }
+  .v-main h3 { margin: 0; font-size: 19px; font-weight: 600; }
+  .v-main .row { display: flex; align-items: center; justify-content: space-between; }
+  .v-score { font-size: 46px; font-weight: 800; line-height: 1; margin: 16px 0 2px; }
+  .v-bars { display: grid; gap: 9px; margin-top: 16px; font-size: 12px; color: #c9c4d6; }
+  .v-bars div { display: grid; grid-template-columns: 1fr 110px; gap: 10px; align-items: center; }
+  .v-bars b { height: 6px; border-radius: 9px; background: #2a2635; overflow: hidden; display: block; }
+  .v-bars b i { display: block; height: 100%; background: var(--grad); }
+  .v-tag { position: absolute; z-index: 3; top: 0; right: 2%; padding: 10px 14px; font-size: 12px; display: flex; gap: 8px; align-items: center; }
+  .v-tag b { font-size: 13px; }
+  .v-chat { z-index: 2; left: 6%; right: 16%; bottom: 10px; padding: 16px 18px; }
+  .v-chat .who { display: flex; gap: 6px; margin-bottom: 6px; }
+  .v-chat .who span { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--ink); color: #fff; }
+  .v-chat .who span + span { background: var(--grad); }
+  .v-chat p { margin: 0; font-size: 15px; font-weight: 500; }
+  .v-chat p em { font-style: normal; color: #b9b3c2; }
+  .v-dot { position: absolute; left: 4%; top: 46%; width: 34px; height: 34px; border-radius: 50%; background: var(--grad); color: #fff; display: grid; place-items: center; box-shadow: 0 0 0 6px rgba(255,255,255,.8); }
+
+  /* Rubric strip */
+  .strip { padding: 22px 40px 30px; border-bottom: 1px solid var(--line); }
+  .strip p { text-align: center; margin: 0 0 18px; font-size: 14px; color: var(--ink-2); }
+  .strip p b { color: var(--ink); }
+  .rubric { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .rubric div { text-align: center; }
+  .rubric strong { display: block; font-size: 24px; font-weight: 800; }
+  .rubric span { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+
+  /* App */
+  .app { padding: 48px 40px 56px; }
+  .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .section-head h2 { margin: 6px 0 4px; font-size: 32px; letter-spacing: -.02em; }
+  .section-head p { margin: 0; color: var(--muted); }
+  .layout { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 24px; align-items: start; }
   .layout > * { min-width: 0; }
-  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .side { position: static; } }
-  @media (max-width: 600px) { header { position: static; } .bar, .layout { padding-left: 16px; padding-right: 16px; } .logo { font-size: 15px; } .status { font-size: 12px; } }
-
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
-  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .card-head h2 { font-size: 15px; margin: 0; display: flex; align-items: center; gap: 8px; }
-  .step { width: 22px; height: 22px; border-radius: 50%; background: var(--line); color: var(--muted); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
-  .step.done { background: var(--good); color: #fff; }
-  .badge { background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+  .side { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; position: sticky; top: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 20px; min-width: 0; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 8px; }
+  .card-head h3 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+  .num { width: 26px; height: 26px; border-radius: 50%; background: var(--blush); color: var(--pink); display: grid; place-items: center; font-size: 13px; font-weight: 800; }
+  .num.done { background: var(--good); color: #fff; }
+  .count { background: var(--blush); color: var(--pink); font-size: 12px; font-weight: 800; padding: 1px 9px; border-radius: 99px; }
   .muted { color: var(--muted); font-size: 13px; }
 
-  /* Buttons */
-  .btn { border: 0; border-radius: 8px; padding: 9px 14px; font-weight: 600; background: var(--brand); color: #fff; }
-  .btn.soft { background: var(--brand-soft); color: var(--brand); }
-  .btn.text { background: none; color: var(--brand); padding: 0; font-weight: 500; }
-  .btn.text.red { color: var(--bad); }
-  .btn.full { width: 100%; padding: 12px; }
-  .btn:disabled { opacity: .55; cursor: not-allowed; }
-
-  /* Resume */
-  .drop { display: block; border: 2px dashed var(--line); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; color: var(--muted); font-size: 14px; }
-  .drop:hover, .drop.over { border-color: var(--brand); background: var(--brand-soft); }
-  .drop b { color: var(--brand); display: block; } .drop input { display: none; }
-  .file { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--good-bg); }
-  .file span { flex: 1; font-weight: 600; color: var(--good); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .drop { display: block; border: 2px dashed #e6d9da; border-radius: 16px; padding: 22px; text-align: center; cursor: pointer; color: var(--muted); font-size: 14px; background: var(--blush); }
+  .drop:hover, .drop.over { border-color: var(--pink); }
+  .drop b { display: block; color: var(--ink); font-size: 15px; } .drop input { display: none; }
+  .file { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--good-bg); }
+  .file span { flex: 1; font-weight: 700; color: var(--good); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .link { background: none; border: 0; padding: 0; color: var(--violet); font-weight: 600; }
+  .link.red { color: var(--bad); }
   .alt { margin-top: 10px; text-align: center; font-size: 13px; color: var(--muted); }
+  .btn-soft { border: 0; background: var(--blush); color: var(--pink); font-weight: 700; padding: 8px 14px; border-radius: 12px; }
+  .btn-dark { border: 0; background: var(--ink); color: #fff; font-weight: 600; padding: 9px 16px; border-radius: 12px; }
+  .btn-dark:disabled, .btn-grad:disabled { opacity: .5; cursor: not-allowed; }
 
-  /* Jobs */
-  .form { display: grid; gap: 10px; margin-bottom: 12px; padding: 14px; border-radius: 10px; background: var(--bg); }
-  .form label { font-size: 12px; font-weight: 600; display: grid; gap: 4px; }
-  .form input, .form textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-weight: 400; background: #fff; color: var(--ink); }
+  .form { display: grid; gap: 10px; margin-bottom: 12px; padding: 14px; border-radius: 16px; background: var(--blush); }
+  .form label { font-size: 12px; font-weight: 700; display: grid; gap: 4px; }
+  .form input, .form textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-weight: 400; background: #fff; color: var(--ink); }
   .form textarea { min-height: 130px; resize: vertical; }
-  .form .actions { display: flex; gap: 8px; justify-content: flex-end; }
-  .jobs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; max-height: 340px; overflow-y: auto; }
-  .jobs li { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; }
-  .jobs li div { flex: 1; min-width: 0; }
-  .jobs b { display: block; overflow-wrap: anywhere; line-height: 1.35; }
-  .jobs small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .jobs .btn { flex: none; }
-  .jobs small { color: var(--muted); }
-  .empty { text-align: center; padding: 14px; color: var(--muted); font-size: 14px; }
-
-  .error { color: var(--bad); background: var(--bad-bg); padding: 9px 12px; border-radius: 8px; font-size: 14px; }
+  .form .actions { display: flex; gap: 12px; justify-content: flex-end; align-items: center; }
+  .jobs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; max-height: 360px; overflow-y: auto; }
+  .jobs li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; }
+  .jobs li > div { flex: 1; min-width: 0; }
+  .jobs b { display: block; overflow-wrap: anywhere; line-height: 1.35; font-size: 14px; }
+  .jobs small { display: block; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .empty { text-align: center; padding: 16px; color: var(--muted); font-size: 14px; border: 1px dashed var(--line) !important; display: block !important; }
+  .error { color: var(--bad); background: var(--bad-bg); padding: 10px 12px; border-radius: 12px; font-size: 14px; }
 
   /* Results */
-  .main-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
-  .main-head h1 { margin: 0; font-size: 22px; } .main-head p { margin: 2px 0 0; }
-  .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px; }
-  .how div { background: var(--bg); border-radius: 10px; padding: 14px; }
-  .how b { display: block; margin-bottom: 2px; }
-  @media (max-width: 600px) { .how { grid-template-columns: 1fr; } }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-  .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
-  .stat small { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
-  .stat div { font-size: 22px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
-  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
-  .result { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
-  .result-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
-  .rank { color: var(--muted); font-weight: 700; width: 18px; }
-  .pct { flex: none; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; }
-  .result-row .info { flex: 1; min-width: 0; }
-  .result-row h3 { margin: 0; font-size: 15px; overflow-wrap: anywhere; line-height: 1.35; }
-  .result-row .btn { flex: none; }
-  .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 9px; border-radius: 99px; margin-top: 3px; }
-  .details { border-top: 1px solid var(--line); padding: 16px; display: grid; gap: 14px; background: #fcfcfd; }
-  .details h4 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
-  .details p { margin: 0; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 600px) { .two { grid-template-columns: 1fr; } .stat { padding: 10px; } .stat div { font-size: 17px; } .result-row { gap: 10px; padding: 12px; } .pct { width: 48px; height: 48px; font-size: 14px; } }
+  .run { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 18px 20px; border-radius: 22px; background: var(--blush); margin-bottom: 16px; }
+  .run p { margin: 0; font-weight: 600; } .run .muted { font-weight: 400; }
+  .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .how div { padding: 18px; border-radius: 18px; border: 1px solid var(--line); }
+  .how b { display: block; font-size: 15px; margin: 8px 0 2px; }
+  .how .num { background: var(--grad); color: #fff; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+  .stat { border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px; }
+  .stat small { color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+  .stat div { font-size: 26px; font-weight: 800; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+  .result { border: 1px solid var(--line); border-radius: 22px; margin-bottom: 12px; overflow: hidden; background: #fff; }
+  .result.open { box-shadow: var(--shadow); }
+  .result-row { display: flex; align-items: center; gap: 14px; padding: 16px 18px; }
+  .rank { color: var(--muted); font-weight: 800; width: 18px; }
+  .pct { flex: none; width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 16px; }
+  .info { flex: 1; min-width: 0; }
+  .info h4 { margin: 0; font-size: 16px; overflow-wrap: anywhere; line-height: 1.35; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 99px; margin-top: 4px; }
+  .result-row .btn-dark { flex: none; }
+
+  .details { border-top: 1px solid var(--line); padding: 20px; display: grid; gap: 18px; }
+  .details h5 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .scorebox { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; }
+  .ring { --p: 0; width: 112px; height: 112px; border-radius: 50%; display: grid; place-items: center;
+          background: conic-gradient(var(--violet), var(--pink) calc(var(--p) * .5%), var(--orange) calc(var(--p) * 1%), #f1eaea 0); }
+  .ring div { width: 90px; height: 90px; border-radius: 50%; background: #fff; display: grid; place-items: center; text-align: center; line-height: 1.05; }
+  .ring b { font-size: 26px; } .ring small { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .impression { background: var(--blush); border-radius: 16px; padding: 14px 16px; }
+  .impression span { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .impression p { margin: 4px 0 0; font-weight: 500; }
+  .dims { display: grid; gap: 12px; }
+  .dim-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 700; }
+  .dim-top small { color: var(--muted); font-weight: 600; }
+  .bar { height: 8px; border-radius: 9px; background: #f1eaea; overflow: hidden; margin: 6px 0 3px; }
+  .bar i { display: block; height: 100%; border-radius: 9px; }
+  .dim p { margin: 0; font-size: 13px; color: var(--muted); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { padding: 3px 10px; border-radius: 99px; font-size: 13px; }
+  .chip { padding: 4px 11px; border-radius: 99px; font-size: 13px; font-weight: 600; }
   .chip.good { background: var(--good-bg); color: var(--good); } .chip.bad { background: var(--bad-bg); color: var(--bad); }
-  .details ol { margin: 0; padding-left: 20px; } .details li { margin-bottom: 4px; }
-  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  .chip.plain { background: var(--blush); color: var(--ink-2); }
+  .tips { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .tips li { display: flex; gap: 10px; align-items: flex-start; }
+  .prio { flex: none; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; margin-top: 2px; }
+  .prio.high { background: var(--bad-bg); color: var(--bad); } .prio.medium { background: var(--mid-bg); color: var(--mid); } .prio.low { background: var(--good-bg); color: var(--good); }
+  .checklist { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; font-size: 14px; }
+  .checklist span::before { content: attr(data-ok); margin-right: 8px; }
+  .loading { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+  .spinner { display: inline-block; width: 15px; height: 15px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; flex: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  footer { text-align: center; color: var(--muted); font-size: 12px; padding-bottom: 32px; }
+
+  /* FAQ */
+  .faq { padding: 0 40px 48px; }
+  .faq details { border: 1px solid var(--line); border-radius: 18px; padding: 16px 20px; margin-bottom: 10px; }
+  .faq summary { font-weight: 700; cursor: pointer; }
+  .faq details p { margin: 10px 0 0; color: var(--ink-2); }
+  footer { text-align: center; color: rgba(255,255,255,.85); font-size: 13px; padding: 24px 0 0; }
+  footer a { color: #fff; }
+
+  /* Responsive */
+  @media (max-width: 1000px) {
+    .hero { grid-template-columns: 1fr; } .visual { height: 400px; max-width: 520px; width: 100%; margin: 0 auto; }
+    .layout { grid-template-columns: 1fr; } .side { position: static; }
+    .rubric { grid-template-columns: repeat(3, 1fr); row-gap: 18px; } .links { display: none; }
+  }
+  @media (max-width: 640px) {
+    body { padding: 12px; } .canvas { border-radius: 22px; }
+    .top, .strip, .app, .faq { padding-left: 16px; padding-right: 16px; }
+    .hero { margin-top: 32px; } .visual { height: 380px; }
+    .rubric { grid-template-columns: repeat(2, 1fr); }
+    .how, .two, .checklist { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(3, 1fr); gap: 8px; } .stat { padding: 10px; } .stat div { font-size: 19px; }
+    .result-row { flex-wrap: wrap; gap: 10px; padding: 14px; } .result-row .btn-dark { width: 100%; }
+    .scorebox { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .status { font-size: 12px; padding: 6px 10px; }
+  }
 </style>
 </head>
 <body>
-<header><div class="bar">
-  <div class="logo"><i>AI</i>Resume &amp; Job Matcher</div>
-  <div class="status" id="status">Connecting…</div>
-</div></header>
+<div class="canvas">
+  <!-- ===== HERO ===== -->
+  <div class="top">
+    <nav>
+      <a class="logo" href="#"><i>RM</i>ResuMatch AI</a>
+      <div class="links"><a href="#how">How it works</a><a href="#rubric">What we check</a><a href="#try">Try it</a><a href="#faq">FAQ</a></div>
+      <div class="status" id="status">Connecting</div>
+    </nav>
 
-<div class="layout">
-  <!-- LEFT: inputs -->
-  <aside class="side">
-    <section class="card">
-      <div class="card-head"><h2><span class="step" id="s1">1</span>Your resume</h2></div>
-      <label class="drop" id="drop"><input type="file" id="resume" accept=".pdf,.txt">
-        <b>Upload resume</b>PDF or TXT, drag &amp; drop or click</label>
-      <div class="file hidden" id="file"><span id="file-name"></span>
-        <button class="btn text" id="change">Change</button></div>
-      <div class="alt" id="sample-resume-wrap">No resume handy? <button class="btn text" id="sample-resume">Use a sample</button></div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <h2><span class="step" id="s2">2</span>Job posts <span class="badge" id="count">0</span></h2>
-        <button class="btn soft" id="open-form">+ Add job</button>
+    <div class="hero">
+      <div>
+        <h1><span class="grad-text">AI analysis</span><br>for your resume<br>&amp; dream job</h1>
+        <p class="lead">ResuMatch AI reads your resume the way a recruiter and an ATS do: it scores how well you fit each job, shows the skills you're missing, and tells you exactly what to fix.</p>
+        <div class="cta">
+          <a class="btn-grad" href="#try"><span class="arrow">→</span>Start for free</a>
+          <button class="btn-line" id="hero-sample">Try with sample data</button>
+        </div>
+        <div class="ticks"><span>Free to use</span><span>No sign-up</span><span>Your resume file is never saved</span></div>
       </div>
-      <form class="form hidden" id="job-form">
-        <label>Job title<input name="title" placeholder="e.g. Junior Web Developer" required maxlength="200"></label>
-        <label>Company (optional)<input name="company" placeholder="e.g. Accenture" maxlength="200"></label>
-        <label>Job post<textarea name="description" placeholder="Paste the full job post from JobStreet, LinkedIn or Indeed…" required></textarea></label>
-        <div class="error hidden"></div>
-        <div class="actions"><button type="button" class="btn text" id="cancel">Cancel</button><button class="btn">Save job</button></div>
-      </form>
-      <ul class="jobs" id="jobs"></ul>
-    </section>
-  </aside>
 
-  <!-- RIGHT: results -->
-  <main>
-    <div class="main-head">
-      <div><h1>Your job matches</h1><p class="muted" id="hint">Add your resume and at least one job to start.</p></div>
-      <button class="btn" id="check" disabled>Check my fit</button>
+      <div class="visual" aria-hidden="true">
+        <div class="float v-tag"><span class="grad-text" style="font-size:18px">★</span><div><b>6-second scan</b><br><span class="muted" style="font-size:11px">Recruiter-style review</span></div></div>
+        <div class="float v-main">
+          <div class="row"><h3>Junior Web Developer</h3><span class="muted" style="color:#9d97ab">•••</span></div>
+          <div class="v-score">82<span style="font-size:20px;color:#9d97ab">/100</span></div>
+          <span style="font-size:12px;color:#9d97ab">Recruiter score</span>
+          <div class="v-bars">
+            <div>Skills &amp; keywords<b><i style="width:90%"></i></b></div>
+            <div>Experience &amp; projects<b><i style="width:80%"></i></b></div>
+            <div>Measurable impact<b><i style="width:55%"></i></b></div>
+            <div>Complete sections<b><i style="width:95%"></i></b></div>
+          </div>
+        </div>
+        <div class="v-dot">✦</div>
+        <div class="float v-chat">
+          <div class="who"><span>AI tip</span><span>High priority</span></div>
+          <p>Add numbers to your project bullets, like "used by 50 staff" <em>or "cut load time 40%"…</em></p>
+        </div>
+      </div>
     </div>
-    <div class="error hidden" id="check-error" style="margin-bottom:16px"></div>
+  </div>
 
-    <section class="card" id="intro">
-      <h2 style="margin:0 0 4px;font-size:16px">How it works</h2>
-      <p class="muted" style="margin:0">The AI reads your resume and each job post, then tells you how well they fit.</p>
-      <div class="how">
-        <div><b>1. Upload</b><span class="muted">your resume on the left.</span></div>
-        <div><b>2. Add jobs</b><span class="muted">you're interested in.</span></div>
-        <div><b>3. Check</b><span class="muted">your fit, then open each job for tips.</span></div>
-      </div>
-    </section>
+  <!-- ===== RUBRIC STRIP ===== -->
+  <div class="strip" id="rubric">
+    <p><b>Scored on 6 things recruiters &amp; ATS software check</b>, based on eye-tracking and hiring research</p>
+    <div class="rubric">
+      <div><strong class="grad-text">30%</strong><span>Skills &amp; keywords</span></div>
+      <div><strong class="grad-text">25%</strong><span>Experience &amp; projects</span></div>
+      <div><strong class="grad-text">15%</strong><span>Measurable impact</span></div>
+      <div><strong class="grad-text">10%</strong><span>Education</span></div>
+      <div><strong class="grad-text">10%</strong><span>Complete sections</span></div>
+      <div><strong class="grad-text">10%</strong><span>Clear &amp; scannable</span></div>
+    </div>
+  </div>
 
-    <section id="results" class="hidden">
-      <div class="stats">
-        <div class="stat"><small>Jobs checked</small><div id="st-count">0</div></div>
-        <div class="stat"><small>Best match</small><div id="st-best">–</div></div>
-        <div class="stat"><small>Strong matches</small><div id="st-strong">0</div></div>
-      </div>
-      <div class="legend">
-        <span><i style="background:var(--good)"></i>Strong: apply now</span>
-        <span><i style="background:var(--mid)"></i>Fair: improve your resume first</span>
-        <span><i style="background:var(--bad)"></i>Weak: not a good fit yet</span>
-      </div>
-      <div id="list"></div>
-    </section>
-  </main>
+  <!-- ===== APP ===== -->
+  <div class="app" id="try">
+    <div class="section-head">
+      <div><span class="eyebrow grad-text">Try it</span><h2>Check your fit</h2><p>Upload your resume, add jobs you like, then let the AI compare them.</p></div>
+    </div>
+
+    <div class="layout">
+      <aside class="side">
+        <section class="card">
+          <div class="card-head"><h3><span class="num" id="n1">1</span>Your resume</h3></div>
+          <label class="drop" id="drop"><input type="file" id="resume" accept=".pdf,.txt">
+            <b>Upload your resume</b>PDF or TXT · drag &amp; drop or click</label>
+          <div class="file hidden" id="file"><span id="file-name"></span><button class="link" id="change">Change</button></div>
+          <div class="alt" id="sample-wrap">No resume handy? <button class="link" id="sample-resume">Use a sample</button></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h3><span class="num" id="n2">2</span>Job posts <span class="count" id="count">0</span></h3>
+            <button class="btn-soft" id="open-form">+ Add job</button>
+          </div>
+          <form class="form hidden" id="job-form">
+            <label>Job title<input name="title" placeholder="e.g. Junior Web Developer" required maxlength="200"></label>
+            <label>Company (optional)<input name="company" placeholder="e.g. Accenture" maxlength="200"></label>
+            <label>Job post<textarea name="description" placeholder="Paste the full job post from JobStreet, LinkedIn or Indeed…" required></textarea></label>
+            <div class="error hidden"></div>
+            <div class="actions"><button type="button" class="link" id="cancel">Cancel</button><button class="btn-dark">Save job</button></div>
+          </form>
+          <ul class="jobs" id="jobs"></ul>
+        </section>
+      </aside>
+
+      <main>
+        <div class="run">
+          <div><p id="hint">Upload your resume to begin.</p><span class="muted">Quick match ranks jobs in seconds. Open a job for the full recruiter scorecard.</span></div>
+          <button class="btn-grad" id="check" disabled style="padding:11px 20px;font-size:15px"><span class="arrow">→</span>Check my fit</button>
+        </div>
+        <div class="error hidden" id="check-error" style="margin-bottom:16px"></div>
+
+        <section id="how">
+          <div class="how">
+            <div><span class="num">1</span><b>Upload</b><span class="muted">Your resume, PDF or TXT. It's read once and never stored.</span></div>
+            <div><span class="num">2</span><b>Add jobs</b><span class="muted">Paste job posts you're interested in.</span></div>
+            <div><span class="num">3</span><b>Get scored</b><span class="muted">See your best matches, then open one for the full scorecard.</span></div>
+          </div>
+        </section>
+
+        <section id="results" class="hidden">
+          <div class="stats">
+            <div class="stat"><small>Jobs checked</small><div id="st-count">0</div></div>
+            <div class="stat"><small>Best match</small><div id="st-best">–</div></div>
+            <div class="stat"><small>Strong matches</small><div id="st-strong">0</div></div>
+          </div>
+          <div class="legend">
+            <span><i style="background:var(--good)"></i>Strong: apply now</span>
+            <span><i style="background:var(--mid)"></i>Fair: improve your resume first</span>
+            <span><i style="background:var(--bad)"></i>Weak: not a good fit yet</span>
+          </div>
+          <div id="list"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- ===== FAQ ===== -->
+  <div class="faq" id="faq">
+    <div class="section-head"><div><span class="eyebrow grad-text">FAQ</span><h2>Good to know</h2></div></div>
+    <details><summary>What's the difference between "Quick match" and "Recruiter score"?</summary>
+      <p>Quick match compares the meaning of your resume and the job post using AI embeddings. It's instant, and good for ranking many jobs. The Recruiter score is a deeper review: the AI grades 6 areas recruiters and ATS software check, and the app combines them with fixed weights into a score out of 100.</p></details>
+    <details><summary>How is the Recruiter score calculated?</summary>
+      <p>Skills &amp; keywords 30%, relevant experience &amp; projects 25%, measurable impact 15%, education 10%, complete sections 10%, and clarity 10%. Facts like contact info, sections and numbers in your bullets are measured by code, not guessed by the AI.</p></details>
+    <details><summary>Is my resume saved?</summary>
+      <p>No. Your file is read to get the text and then discarded. Only the job posts you add are saved, and only you can see them in this browser.</p></details>
+    <details><summary>Why does it sometimes take a while?</summary>
+      <p>It runs on Google Gemini's free tier. When it's busy the app automatically switches to another model. Results are saved, so opening the same job again is instant.</p></details>
+  </div>
 </div>
-<footer>Built with FastAPI + Google Gemini · <a href="/docs">API docs</a></footer>
+<footer>Built with FastAPI · Google Gemini · SQLite · Docker · <a href="/docs">API docs</a></footer>
 
 <script>
 const $ = s => document.querySelector(s);
@@ -194,20 +354,20 @@ async function api(url, opts = {}) {
   return body;
 }
 
-// Similarity scores from embeddings run high, so the bands start at 65.
-const verdict = s => s >= 80 ? ["Strong match", "good"] : s >= 65 ? ["Fair match", "mid"] : ["Weak match", "bad"];
+// Embedding similarity runs high, so its bands start higher than the recruiter score's.
+const quickBand = s => s >= 80 ? ["Strong match", "good"] : s >= 65 ? ["Fair match", "mid"] : ["Weak match", "bad"];
+const scoreBand = s => s >= 75 ? "good" : s >= 50 ? "mid" : "bad";
 
 let resume = null, jobs = [];
 
 function refresh() {
-  $("#s1").classList.toggle("done", !!resume);
-  $("#s2").classList.toggle("done", jobs.length > 0);
+  $("#n1").classList.toggle("done", !!resume);
+  $("#n2").classList.toggle("done", jobs.length > 0);
   $("#count").textContent = jobs.length;
-  const ready = resume && jobs.length;
-  $("#check").disabled = !ready;
-  $("#hint").textContent = !resume ? "Step 1: upload your resume on the left."
-    : !jobs.length ? "Step 2: add at least one job post on the left."
-    : `Ready. Click "Check my fit" to compare your resume with ${jobs.length} job${jobs.length > 1 ? "s" : ""}.`;
+  $("#check").disabled = !(resume && jobs.length);
+  $("#hint").textContent = !resume ? "Step 1: upload your resume."
+    : !jobs.length ? "Step 2: add at least one job post."
+    : `Ready to compare your resume with ${jobs.length} job${jobs.length > 1 ? "s" : ""}.`;
 }
 
 // ---- Resume ----
@@ -216,9 +376,8 @@ function setResume(file) {
   if (!/\.(pdf|txt)$/i.test(file.name)) { alert("Please choose a PDF or TXT file."); return; }
   resume = file;
   $("#file-name").textContent = "✓ " + file.name;
-  $("#drop").classList.add("hidden"); $("#sample-resume-wrap").classList.add("hidden");
-  $("#file").classList.remove("hidden");
-  $("#results").classList.add("hidden"); $("#intro").classList.remove("hidden");
+  $("#drop").classList.add("hidden"); $("#sample-wrap").classList.add("hidden"); $("#file").classList.remove("hidden");
+  $("#results").classList.add("hidden"); $("#how").classList.remove("hidden");
   refresh();
 }
 $("#resume").onchange = e => setResume(e.target.files[0]);
@@ -228,21 +387,38 @@ drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
 drop.ondragleave = () => drop.classList.remove("over");
 drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); setResume(e.dataTransfer.files[0]); };
 
-const SAMPLE_RESUME = `Juan Dela Cruz, BS Information Technology graduate.
-Skills: HTML, CSS, JavaScript, PHP, Laravel, MySQL, Python, Git, Figma.
-Projects: built a Laravel inventory system with MySQL; built a responsive portfolio website; made an Android app in Java.
-Experience: IT intern, set up office computers and helped maintain the company website.`;
-$("#sample-resume").onclick = () => setResume(new File([SAMPLE_RESUME], "sample-resume.txt", { type: "text/plain" }));
+const SAMPLE_RESUME = `Juan Dela Cruz
+juan.delacruz@email.com | 0917 123 4567 | github.com/juandc | linkedin.com/in/juandc
+
+SUMMARY
+BS Information Technology graduate focused on web development.
+
+SKILLS
+HTML, CSS, JavaScript, PHP, Laravel, MySQL, Python, Git, Figma
+
+PROJECTS
+- Developed a Laravel inventory system with MySQL used by 3 departments
+- Built a responsive portfolio website with HTML, CSS and JavaScript
+- Created an Android app in Java to control a sand sieving machine
+
+EXPERIENCE
+IT Intern, Sample Company (Jan 2026 - Apr 2026)
+- Set up and maintained 25 office computers
+- Helped update the company website
+
+EDUCATION
+BS Information Technology, Sample University, 2026`;
+const useSampleResume = () => setResume(new File([SAMPLE_RESUME], "sample-resume.txt", { type: "text/plain" }));
+$("#sample-resume").onclick = useSampleResume;
 
 // ---- Jobs ----
 function renderJobs() {
   $("#jobs").innerHTML = jobs.length ? jobs.map(j => `
     <li><div><b>${esc(j.title)}</b><small>${esc(j.company || "—")}</small></div>
-    <button class="btn text red" data-del="${j.id}">Remove</button></li>`).join("")
-    : `<li class="empty">No jobs yet.<br><button class="btn text" id="sample-jobs">Add 3 sample jobs</button></li>`;
+    <button class="link red" data-del="${j.id}">Remove</button></li>`).join("")
+    : `<li class="empty">No jobs yet.<br><button class="link" id="sample-jobs">Add 3 sample jobs</button></li>`;
   document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
-    await api("/api/jobs/" + b.dataset.del, { method: "DELETE" }).catch(() => {});
-    loadJobs();
+    await api("/api/jobs/" + b.dataset.del, { method: "DELETE" }).catch(() => {}); loadJobs();
   });
   const s = $("#sample-jobs"); if (s) s.onclick = addSampleJobs;
   refresh();
@@ -257,28 +433,33 @@ $("#open-form").onclick = () => showForm(true);
 $("#cancel").onclick = () => { $("#job-form").reset(); showForm(false); };
 $("#job-form").onsubmit = async e => {
   e.preventDefault();
-  const form = e.target, btn = form.querySelector("button:not([type])"), err = form.querySelector(".error");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Saving'; err.classList.add("hidden");
+  const form = e.target, btn = form.querySelector(".btn-dark"), err = form.querySelector(".error");
+  btn.disabled = true; btn.textContent = "Saving…"; err.classList.add("hidden");
   try { await api("/api/jobs", { method: "POST", body: new FormData(form) }); form.reset(); showForm(false); await loadJobs(); }
   catch (x) { err.textContent = x.message; err.classList.remove("hidden"); }
   finally { btn.disabled = false; btn.textContent = "Save job"; }
 };
 
 const SAMPLE_JOBS = [
-  ["Junior Web Developer", "Sample Tech Inc.", "Build and maintain web apps using PHP/Laravel, MySQL, HTML, CSS and JavaScript. Knowledge of Git and REST APIs. Fresh graduates welcome."],
-  ["Data Analyst Trainee", "Sample Analytics Co.", "Clean and analyze data using SQL, Excel and Power BI. Create dashboards and reports. Basic Python is a plus."],
-  ["UI/UX Designer", "Sample Studio", "Design user interfaces and prototypes in Figma. Conduct user research and usability testing. Portfolio required."],
+  ["Junior Web Developer", "Sample Tech Inc.", "We're hiring a Junior Web Developer. Build and maintain web apps using PHP/Laravel, MySQL, HTML, CSS and JavaScript. Experience with Git and REST APIs. Bonus: Vue.js, Docker. BS IT/CS graduates welcome."],
+  ["Data Analyst Trainee", "Sample Analytics Co.", "Clean and analyze data using SQL, Excel and Power BI. Build dashboards and present insights to managers. Basic Python is a plus. Strong communication skills."],
+  ["UI/UX Designer", "Sample Studio", "Design user interfaces and prototypes in Figma. Run user research and usability tests. Must have a design portfolio. Knowledge of HTML/CSS is a plus."],
 ];
 async function addSampleJobs() {
-  const b = $("#sample-jobs"); b.disabled = true; b.innerHTML = '<span class="spinner"></span>Adding';
+  const b = $("#sample-jobs"); if (b) { b.disabled = true; b.textContent = "Adding…"; }
   for (const [title, company, description] of SAMPLE_JOBS) {
     const fd = new FormData(); fd.append("title", title); fd.append("company", company); fd.append("description", description);
     await api("/api/jobs", { method: "POST", body: fd }).catch(x => alert(x.message));
   }
-  loadJobs();
+  await loadJobs();
 }
+$("#hero-sample").onclick = async () => {
+  useSampleResume();
+  location.hash = "try";
+  if (!jobs.length) await addSampleJobs();
+};
 
-// ---- Results ----
+// ---- Quick match (ranking) ----
 $("#check").onclick = async () => {
   const btn = $("#check"), err = $("#check-error");
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Checking'; err.classList.add("hidden");
@@ -287,60 +468,92 @@ $("#check").onclick = async () => {
     const ranked = await api("/api/jobs/rank", { method: "POST", body: fd });
     $("#st-count").textContent = ranked.length;
     $("#st-best").textContent = ranked[0] ? Math.round(ranked[0].score) + "%" : "–";
-    $("#st-best").title = ranked[0] ? ranked[0].title : "";
-    $("#hint").textContent = "Click \"See details\" on a job to see what you have, what you're missing, and how to improve.";
     $("#st-strong").textContent = ranked.filter(r => r.score >= 80).length;
     $("#list").innerHTML = ranked.map((j, i) => {
-      const [label, k] = verdict(j.score);
+      const [label, k] = quickBand(j.score);
       return `<article class="result" data-id="${j.id}">
         <div class="result-row">
           <span class="rank">${i + 1}</span>
           <div class="pct" style="background:var(--${k}-bg);color:var(--${k})">${Math.round(j.score)}%</div>
-          <div class="info"><h3>${esc(j.title)}</h3><span class="muted">${esc(j.company || "")}</span><br>
-            <span class="pill" style="background:var(--${k}-bg);color:var(--${k})">${label}</span></div>
-          <button class="btn soft">See details</button>
+          <div class="info"><h4>${esc(j.title)}</h4><span class="muted">${esc(j.company || "")}</span><br>
+            <span class="pill" style="background:var(--${k}-bg);color:var(--${k})">${label}</span> <span class="muted">Quick match</span></div>
+          <button class="btn-dark">Full scorecard</button>
         </div>
         <div class="details hidden"></div>
       </article>`;
     }).join("");
     document.querySelectorAll(".result").forEach(el => el.querySelector("button").onclick = () => details(el));
-    $("#intro").classList.add("hidden"); $("#results").classList.remove("hidden");
+    $("#how").classList.add("hidden"); $("#results").classList.remove("hidden");
+    $("#hint").textContent = "Open \"Full scorecard\" on a job to see how a recruiter would rate you.";
   } catch (x) { err.textContent = x.message; err.classList.remove("hidden"); }
-  finally { btn.textContent = "Check again"; btn.disabled = !(resume && jobs.length); }
+  finally { btn.innerHTML = '<span class="arrow">→</span>Check again'; btn.disabled = !(resume && jobs.length); }
 };
+
+// ---- Full scorecard ----
+function renderScorecard(d) {
+  const chips = (l, c) => (l || []).map(s => `<span class="chip ${c}">${esc(s)}</span>`).join("") || '<span class="muted">None found</span>';
+  const band = scoreBand(d.recruiter_score);
+  const verdict = { good: "Strong candidate: apply now", mid: "Decent fit: polish your resume first", bad: "Not a strong fit yet" }[band];
+  const c = d.checks || {}, sec = c.sections || {};
+  const tick = ok => ok ? "✅" : "❌";
+  const check = (ok, text) => `<span data-ok="${tick(ok)}">${text}</span>`;
+  return `
+    <div class="scorebox">
+      <div class="ring" style="--p:${d.recruiter_score}"><div><b>${Math.round(d.recruiter_score)}</b><small>of 100</small></div></div>
+      <div>
+        <span class="pill" style="background:var(--${band}-bg);color:var(--${band});margin:0 0 6px">${verdict}</span>
+        <p style="margin:0 0 10px">${esc(d.summary)}</p>
+        ${d.first_impression ? `<div class="impression"><span class="grad-text">6-second impression</span><p>${esc(d.first_impression)}</p></div>` : ""}
+      </div>
+    </div>
+    <div><h5>Recruiter scorecard</h5><div class="dims">${(d.dimensions || []).map(x => {
+      const k = x.score >= 7 ? "good" : x.score >= 5 ? "mid" : "bad";
+      return `<div class="dim"><div class="dim-top">${esc(x.label)}<small>${x.score}/10 · weight ${x.weight}%</small></div>
+        <div class="bar"><i style="width:${x.score * 10}%;background:var(--${k})"></i></div><p>${esc(x.reason)}</p></div>`;
+    }).join("")}</div></div>
+    <div class="two">
+      <div><h5>✅ Skills you have</h5><div class="chips">${chips(d.matched_skills, "good")}</div></div>
+      <div><h5>❌ Skills you're missing</h5><div class="chips">${chips(d.missing_skills, "bad")}</div></div>
+    </div>
+    ${(d.strengths || []).length ? `<div><h5>⭐ What makes you stand out</h5><div class="chips">${chips(d.strengths, "plain")}</div></div>` : ""}
+    <div><h5>💡 What to fix first</h5><ul class="tips">${(d.suggestions || []).map(s =>
+      `<li><span class="prio ${s.priority}">${s.priority}</span><span>${esc(s.text)}</span></li>`).join("")}</ul></div>
+    <div><h5>ATS checklist</h5><div class="checklist">
+      ${check(c.has_email && c.has_phone, "Email &amp; phone number")}
+      ${check(c.has_linkedin, "LinkedIn link")}
+      ${check(c.has_github, "GitHub / portfolio link")}
+      ${check(sec.skills, "Skills section")}
+      ${check(sec.projects || sec.experience, "Projects or experience")}
+      ${check(sec.education, "Education section")}
+      ${check(c.quantified_bullets > 0, `Results with numbers (${c.quantified_bullets || 0} of ${c.bullet_count || 0} bullets)`)}
+      ${check((c.estimated_pages || 0) <= 2, `Length about ${c.estimated_pages || 0} page(s)`)}
+    </div></div>`;
+}
 
 async function details(el) {
   const box = el.querySelector(".details"), btn = el.querySelector("button");
   if (box.dataset.loaded) {
-    box.classList.toggle("hidden");
-    btn.textContent = box.classList.contains("hidden") ? "See details" : "Hide details";
+    const open = box.classList.toggle("hidden");
+    el.classList.toggle("open", !open); btn.textContent = open ? "Full scorecard" : "Hide";
     return;
   }
   const job = jobs.find(j => j.id == el.dataset.id);
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>AI is reading';
-  box.innerHTML = '<p class="muted"><span class="spinner"></span>The AI is comparing your resume with this job. This usually takes 5–15 seconds…</p>';
-  box.classList.remove("hidden");
-  const slow = setTimeout(() => { box.querySelector("p") && (box.querySelector("p").innerHTML = '<span class="spinner"></span>Still working. The free AI server is busy, so this one is taking longer…'); }, 15000);
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  box.innerHTML = '<div class="loading"><span class="spinner"></span><span>The AI is reviewing your resume like a recruiter. Usually 5–15 seconds…</span></div>';
+  box.classList.remove("hidden"); el.classList.add("open");
+  const slow = setTimeout(() => { const s = box.querySelector(".loading span:last-child"); if (s) s.textContent = "Still working. The free AI server is busy, so this one is taking longer…"; }, 15000);
   try {
     const fd = new FormData(); fd.append("resume", resume); fd.append("job_post", job.description);
     const d = await api("/api/match", { method: "POST", body: fd });
-    const chips = (l, c) => (l || []).map(s => `<span class="chip ${c}">${esc(s)}</span>`).join("") || '<span class="muted">None</span>';
-    box.innerHTML = `
-      <div><h4>Summary</h4><p>${esc(d.summary)}</p></div>
-      <div class="two">
-        <div><h4>✅ You already have</h4><div class="chips">${chips(d.matched_skills, "good")}</div></div>
-        <div><h4>❌ You're missing</h4><div class="chips">${chips(d.missing_skills, "bad")}</div></div>
-      </div>
-      <div><h4>💡 How to improve your resume</h4><ol>${(d.suggestions || []).map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>`;
-    box.dataset.loaded = 1; box.classList.remove("hidden"); btn.textContent = "Hide details";
+    box.innerHTML = renderScorecard(d); box.dataset.loaded = 1; btn.textContent = "Hide";
   } catch (x) {
-    box.innerHTML = `<div class="error">${esc(x.message)}</div>`; box.classList.remove("hidden"); btn.textContent = "Try again";
+    box.innerHTML = `<div class="error">${esc(x.message)}</div>`; btn.textContent = "Try again";
   } finally { clearTimeout(slow); btn.disabled = false; }
 }
 
 api("/api/health")
-  .then(d => { $("#status").textContent = "Online"; $("#status").style.setProperty("--st", "var(--good)"); })
-  .catch(() => { $("#status").textContent = "Server offline"; $("#status").style.setProperty("--st", "var(--bad)"); });
+  .then(() => { $("#status").textContent = "AI online"; $("#status").style.setProperty("--st", "var(--good)"); })
+  .catch(() => { $("#status").textContent = "Offline"; $("#status").style.setProperty("--st", "var(--bad)"); });
 loadJobs();
 </script>
 </body>

@@ -4,6 +4,7 @@ from app.api.routes import provider_dep, store_dep
 from app.main import app
 from app.providers.base import AIProvider
 from app.services.job_store import JobStore
+from app.services.matcher import RUBRIC
 from app.services.rate_limit import RateLimiter
 
 
@@ -14,7 +15,11 @@ class FakeProvider(AIProvider):
 
     def generate_json(self, prompt: str) -> dict:
         FakeProvider.calls += 1
-        return {"matched_skills": ["Python"], "missing_skills": ["Docker"], "suggestions": ["Add metrics"], "summary": "Good fit."}
+        return {
+            "scores": {k: {"score": 8, "reason": "ok"} for k in RUBRIC},
+            "matched_skills": ["Python"], "missing_skills": ["Docker"],
+            "suggestions": [{"priority": "high", "text": "Add metrics"}], "summary": "Good fit.",
+        }
 
     def embed(self, texts):
         return [[1.0, 0.0] for _ in texts]
@@ -44,12 +49,14 @@ def test_match():
     body = r.json()
     assert body["match_score"] == 100.0
     assert "Docker" in body["missing_skills"]
+    assert body["recruiter_score"] == 80.0
+    assert len(body["dimensions"]) == len(RUBRIC)
 
 
 def test_home_page():
     r = client.get("/")
     assert r.status_code == 200
-    assert "AI Resume" in r.text
+    assert "ResuMatch AI" in r.text
 
 
 def test_match_is_cached():
