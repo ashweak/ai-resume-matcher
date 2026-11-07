@@ -7,53 +7,62 @@
 <style>
   :root {
     --bg: #f6f7f9; --card: #fff; --ink: #1b1f24; --muted: #667085; --line: #e4e7ec;
-    --brand: #2f5bea; --brand-ink: #fff; --good: #12805c; --good-bg: #e7f6ef;
-    --bad: #b42318; --bad-bg: #fdecea; --mid: #b54708;
+    --brand: #2f5bea; --brand-soft: #eef2ff;
+    --good: #12805c; --good-bg: #e7f6ef; --mid: #b54708; --mid-bg: #fef4e6; --bad: #b42318; --bad-bg: #fdecea;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  body { margin: 0; font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
   header { background: var(--card); border-bottom: 1px solid var(--line); }
-  .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px; }
-  header .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  h1 { font-size: 18px; margin: 0; }
-  h1 span { color: var(--brand); }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  h1 { font-size: 18px; margin: 0; } h1 span { color: var(--brand); }
   .status { font-size: 13px; color: var(--muted); }
-  nav { display: flex; gap: 4px; margin: 24px 0 16px; border-bottom: 1px solid var(--line); }
-  nav button { background: none; border: 0; padding: 10px 14px; font: inherit; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
-  nav button.active { color: var(--ink); border-color: var(--brand); font-weight: 600; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-  .card h2 { font-size: 16px; margin: 0 0 4px; }
-  .hint { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+  .intro { padding: 28px 0 8px; } .intro h2 { margin: 0 0 4px; font-size: 22px; } .intro p { margin: 0; color: var(--muted); }
+
+  .step { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin: 16px 0; }
+  .step.locked { opacity: .5; pointer-events: none; }
+  .step-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+  .num { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; }
+  .num.done { background: var(--good); }
+  .step h3 { margin: 2px 0 2px; font-size: 17px; } .step-head p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .drop { display: block; border: 2px dashed var(--line); border-radius: 12px; padding: 22px; text-align: center; cursor: pointer; color: var(--muted); }
+  .drop:hover { border-color: var(--brand); background: var(--brand-soft); }
+  .drop b { color: var(--brand); } .drop input { display: none; }
+  .file-ok { display: flex; align-items: center; justify-content: space-between; background: var(--good-bg); color: var(--good); padding: 12px 14px; border-radius: 10px; font-weight: 600; }
+
   label { display: block; font-weight: 600; font-size: 13px; margin: 12px 0 6px; }
-  input[type=text], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: #fff; color: var(--ink); }
-  textarea { min-height: 160px; resize: vertical; }
-  input[type=file] { font: inherit; }
+  input[type=text], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; color: var(--ink); background: #fff; }
+  textarea { min-height: 140px; resize: vertical; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .btn { display: block; margin-top: 16px; background: var(--brand); color: var(--brand-ink); border: 0; border-radius: 8px; padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+  .btn { display: inline-block; margin-top: 14px; background: var(--brand); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+  .btn.big { width: 100%; padding: 14px; font-size: 16px; }
+  .btn.light { background: var(--brand-soft); color: var(--brand); }
+  .btn.link { background: none; color: var(--muted); padding: 4px 6px; margin: 0; font-weight: 500; text-decoration: underline; }
   .btn:disabled { opacity: .6; cursor: wait; }
-  .btn.ghost { display: inline-block; background: none; color: var(--bad); padding: 4px 8px; margin: 0; font-weight: 500; }
   .error { color: var(--bad); background: var(--bad-bg); padding: 10px 12px; border-radius: 8px; margin-top: 12px; }
-  .score { display: flex; align-items: center; gap: 16px; }
-  .ring { --p: 0; width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center; flex: none;
-          background: conic-gradient(var(--c, var(--brand)) calc(var(--p) * 1%), var(--line) 0); }
-  .ring b { width: 70px; height: 70px; border-radius: 50%; background: var(--card); display: grid; place-items: center; font-size: 20px; }
+
+  .saved { list-style: none; padding: 0; margin: 14px 0 0; }
+  .saved li { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; margin-top: 8px; }
+  .saved small { color: var(--muted); }
+
+  .legend { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+  .result { border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 12px; }
+  .result-top { display: flex; align-items: center; gap: 14px; }
+  .pct { flex: none; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 17px; }
+  .result h4 { margin: 0; font-size: 16px; } .result small { color: var(--muted); }
+  .verdict { display: inline-block; margin-top: 4px; font-size: 13px; font-weight: 600; padding: 2px 10px; border-radius: 99px; }
+  .details { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+  .details h5 { margin: 12px 0 6px; font-size: 14px; } .details h5:first-child { margin-top: 0; }
+  .details p { margin: 0; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { padding: 4px 10px; border-radius: 999px; font-size: 13px; }
-  .chip.good { background: var(--good-bg); color: var(--good); }
-  .chip.bad { background: var(--bad-bg); color: var(--bad); }
-  ul.sugg { margin: 0; padding-left: 20px; }
-  ul.sugg li { margin-bottom: 6px; }
-  .jobs { list-style: none; margin: 0; padding: 0; }
-  .jobs li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
-  .jobs li:first-child { border-top: 0; }
-  .jobs small { color: var(--muted); }
-  .bar { width: 220px; height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--brand); }
-  .rank-row { display: flex; align-items: center; gap: 12px; }
-  .rank-row b { width: 52px; text-align: right; }
-  .hidden { display: none; }
-  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 24px 0 40px; }
-  @media (max-width: 640px) { .row { grid-template-columns: 1fr; } .bar { width: 90px; } }
+  .chip { padding: 3px 10px; border-radius: 99px; font-size: 13px; }
+  .chip.good { background: var(--good-bg); color: var(--good); } .chip.bad { background: var(--bad-bg); color: var(--bad); }
+  .details ol { margin: 0; padding-left: 20px; } .details li { margin-bottom: 4px; }
+  .hidden { display: none !important; }
+  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 16px 0 40px; }
+  @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -63,141 +72,175 @@
 </div></header>
 
 <main class="wrap">
-  <nav>
-    <button class="active" data-tab="match">1. Check one job</button>
-    <button data-tab="jobs">2. My saved jobs</button>
-    <button data-tab="rank">3. Find my best jobs</button>
-  </nav>
+  <div class="intro">
+    <h2>Find out which jobs fit you</h2>
+    <p>Three steps: upload your resume, add job posts you like, then let the AI compare them.</p>
+  </div>
 
-  <!-- TAB 1: match one job -->
-  <section id="tab-match">
-    <form class="card" id="match-form">
-      <h2>How well does my resume fit this job?</h2>
-      <p class="hint">Upload your resume (PDF or TXT) and paste a job post. The AI scores the fit and tells you what to improve.</p>
-      <label>Your resume</label>
-      <input type="file" name="resume" accept=".pdf,.txt" required>
-      <label>Job post</label>
-      <textarea name="job_post" placeholder="Paste the full job description here…" required></textarea>
-      <button class="btn">Analyze</button>
-      <div class="error hidden"></div>
-    </form>
-    <div id="match-result" class="hidden"></div>
+  <!-- STEP 1 -->
+  <section class="step" id="step1">
+    <div class="step-head"><div class="num" id="n1">1</div>
+      <div><h3>Upload your resume</h3><p>PDF or TXT. You only do this once.</p></div></div>
+    <label class="drop" id="drop"><input type="file" id="resume" accept=".pdf,.txt">
+      <b>Click to choose your resume</b><br>or drag the file here</label>
+    <div class="file-ok hidden" id="file-ok"><span id="file-name"></span>
+      <button class="btn link" id="change-file">Change</button></div>
   </section>
 
-  <!-- TAB 2: saved jobs -->
-  <section id="tab-jobs" class="hidden">
-    <form class="card" id="job-form">
-      <h2>Save a job post</h2>
-      <p class="hint">Save jobs you're interested in, then use tab 3 to see which ones fit you best.</p>
+  <!-- STEP 2 -->
+  <section class="step" id="step2">
+    <div class="step-head"><div class="num" id="n2">2</div>
+      <div><h3>Add job posts</h3><p>Copy a job post from JobStreet, LinkedIn or Indeed and paste it here. Add as many as you like.</p></div></div>
+    <form id="job-form">
       <div class="row">
-        <div><label>Job title</label><input type="text" name="title" placeholder="e.g. Web Developer" required></div>
-        <div><label>Company (optional)</label><input type="text" name="company" placeholder="e.g. Accenture"></div>
+        <div><label>Job title</label><input type="text" name="title" placeholder="e.g. Junior Web Developer" required></div>
+        <div><label>Company <small>(optional)</small></label><input type="text" name="company" placeholder="e.g. Accenture"></div>
       </div>
-      <label>Job description</label>
+      <label>Job post</label>
       <textarea name="description" placeholder="Paste the full job description here…" required></textarea>
-      <button class="btn">Save job</button>
+      <button class="btn light">+ Add this job</button>
       <div class="error hidden"></div>
     </form>
-    <div class="card">
-      <h2>Saved jobs</h2>
-      <ul class="jobs" id="job-list"></ul>
-    </div>
+    <ul class="saved" id="saved"></ul>
   </section>
 
-  <!-- TAB 3: rank -->
-  <section id="tab-rank" class="hidden">
-    <form class="card" id="rank-form">
-      <h2>Which saved jobs fit me best?</h2>
-      <p class="hint">Upload your resume. Your saved jobs are ranked by how closely they match it.</p>
-      <label>Your resume</label>
-      <input type="file" name="resume" accept=".pdf,.txt" required>
-      <input type="hidden" name="top_k" value="10">
-      <button class="btn">Rank my jobs</button>
-      <div class="error hidden"></div>
-    </form>
-    <div class="card hidden" id="rank-result"><h2>Best matches</h2><ul class="jobs" id="rank-list"></ul></div>
+  <!-- STEP 3 -->
+  <section class="step locked" id="step3">
+    <div class="step-head"><div class="num">3</div>
+      <div><h3>See your results</h3><p id="step3-hint">Finish steps 1 and 2 first.</p></div></div>
+    <button class="btn big" id="check">Check my fit</button>
+    <div class="error hidden" id="check-error"></div>
+    <div id="results" class="hidden">
+      <div class="legend">
+        <span><i class="dot" style="background:var(--good)"></i>Strong match: apply now</span>
+        <span><i class="dot" style="background:var(--mid)"></i>Fair match: improve your resume first</span>
+        <span><i class="dot" style="background:var(--bad)"></i>Weak match: not a good fit yet</span>
+      </div>
+      <div id="result-list"></div>
+    </div>
   </section>
 </main>
 
 <footer>Built with FastAPI + Google Gemini · <a href="/docs">API docs</a></footer>
 
 <script>
-const $ = (s, el = document) => el.querySelector(s);
+const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const color = n => n >= 75 ? "var(--good)" : n >= 50 ? "var(--mid)" : "var(--bad)";
+let resumeFile = null, jobs = [];
 
-// Tabs
-document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
-  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("active", x === b));
-  document.querySelectorAll("main section").forEach(s => s.classList.toggle("hidden", s.id !== "tab-" + b.dataset.tab));
-  if (b.dataset.tab === "jobs") loadJobs();
-});
-
-// Send a form, show errors, return JSON
-async function send(form, url, method = "POST") {
-  const btn = $(".btn", form), err = $(".error", form), label = btn.textContent;
-  btn.disabled = true; btn.textContent = "Working…"; err.classList.add("hidden");
-  try {
-    const r = await fetch(url, { method, body: new FormData(form) });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.detail || "Something went wrong (" + r.status + "). Try again.");
-    return data;
-  } catch (e) {
-    err.textContent = e.message; err.classList.remove("hidden"); return null;
-  } finally { btn.disabled = false; btn.textContent = label; }
+// Similarity scores from embeddings run high, so the bands start at 65.
+function verdict(score) {
+  if (score >= 80) return { text: "Strong match", c: "var(--good)", bg: "var(--good-bg)" };
+  if (score >= 65) return { text: "Fair match", c: "var(--mid)", bg: "var(--mid-bg)" };
+  return { text: "Weak match", c: "var(--bad)", bg: "var(--bad-bg)" };
 }
 
-// Tab 1
-$("#match-form").onsubmit = async e => {
-  e.preventDefault();
-  const d = await send(e.target, "/api/match");
-  if (!d) return;
-  const box = $("#match-result");
-  const chips = (list, cls) => (list || []).map(s => `<span class="chip ${cls}">${esc(s)}</span>`).join("") || "<span class='hint'>None</span>";
-  box.innerHTML = `
-    <div class="card score">
-      <div class="ring" style="--p:${d.match_score};--c:${color(d.match_score)}"><b>${Math.round(d.match_score)}%</b></div>
-      <div><h2>Match score</h2><p class="hint" style="margin:0">${esc(d.summary)}</p></div>
-    </div>
-    <div class="card"><h2>Skills you have ✅</h2><div class="chips">${chips(d.matched_skills, "good")}</div></div>
-    <div class="card"><h2>Skills to learn ❌</h2><div class="chips">${chips(d.missing_skills, "bad")}</div></div>
-    <div class="card"><h2>How to improve your resume</h2><ul class="sugg">${(d.suggestions || []).map(s => `<li>${esc(s)}</li>`).join("")}</ul></div>`;
-  box.classList.remove("hidden");
-  box.scrollIntoView({ behavior: "smooth" });
-};
+function refresh() {
+  $("#n1").classList.toggle("done", !!resumeFile);
+  $("#n2").classList.toggle("done", jobs.length > 0);
+  const ready = resumeFile && jobs.length;
+  $("#step3").classList.toggle("locked", !ready);
+  $("#step3-hint").textContent = ready
+    ? `The AI will compare your resume with your ${jobs.length} saved job${jobs.length > 1 ? "s" : ""}.`
+    : "Finish steps 1 and 2 first.";
+}
 
-// Tab 2
+// STEP 1: resume
+function setResume(file) {
+  if (!file) return;
+  if (!/\.(pdf|txt)$/i.test(file.name)) { alert("Please choose a PDF or TXT file."); return; }
+  resumeFile = file;
+  $("#file-name").textContent = "✓ " + file.name;
+  $("#drop").classList.add("hidden"); $("#file-ok").classList.remove("hidden");
+  $("#results").classList.add("hidden");
+  refresh();
+}
+$("#resume").onchange = e => setResume(e.target.files[0]);
+$("#change-file").onclick = () => { $("#resume").value = ""; $("#resume").click(); };
+const drop = $("#drop");
+drop.ondragover = e => { e.preventDefault(); drop.style.borderColor = "var(--brand)"; };
+drop.ondragleave = () => drop.style.borderColor = "";
+drop.ondrop = e => { e.preventDefault(); drop.style.borderColor = ""; setResume(e.dataTransfer.files[0]); };
+
+// STEP 2: jobs
 async function loadJobs() {
-  const list = $("#job-list");
-  const jobs = await fetch("/api/jobs").then(r => r.json()).catch(() => []);
-  list.innerHTML = jobs.length ? jobs.map(j => `
-    <li><div><b>${esc(j.title)}</b><br><small>${esc(j.company || "No company")}</small></div>
-    <button class="btn ghost" data-id="${j.id}">Delete</button></li>`).join("")
-    : "<li class='hint'>No saved jobs yet.</li>";
-  list.querySelectorAll("[data-id]").forEach(b => b.onclick = async () => {
+  jobs = await fetch("/api/jobs").then(r => r.json()).catch(() => []);
+  $("#saved").innerHTML = jobs.map(j => `
+    <li><div><b>${esc(j.title)}</b> <small>${esc(j.company)}</small></div>
+    <button class="btn link" data-id="${j.id}">Remove</button></li>`).join("");
+  document.querySelectorAll("#saved [data-id]").forEach(b => b.onclick = async () => {
     await fetch("/api/jobs/" + b.dataset.id, { method: "DELETE" }); loadJobs();
   });
+  refresh();
 }
 $("#job-form").onsubmit = async e => {
   e.preventDefault();
-  if (await send(e.target, "/api/jobs")) { e.target.reset(); loadJobs(); }
+  const form = e.target, btn = form.querySelector(".btn"), err = form.querySelector(".error");
+  btn.disabled = true; btn.textContent = "Adding…"; err.classList.add("hidden");
+  try {
+    const r = await fetch("/api/jobs", { method: "POST", body: new FormData(form) });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || "Could not add the job. Try again.");
+    form.reset(); await loadJobs();
+  } catch (x) { err.textContent = x.message; err.classList.remove("hidden"); }
+  finally { btn.disabled = false; btn.textContent = "+ Add this job"; }
 };
 
-// Tab 3
-$("#rank-form").onsubmit = async e => {
-  e.preventDefault();
-  const d = await send(e.target, "/api/jobs/rank");
-  if (!d) return;
-  $("#rank-list").innerHTML = d.map((j, i) => `
-    <li><div><b>${i + 1}. ${esc(j.title)}</b><br><small>${esc(j.company || "")}</small></div>
-    <div class="rank-row"><div class="bar"><i style="width:${j.score}%;background:${color(j.score)}"></i></div><b>${j.score}%</b></div></li>`).join("");
-  $("#rank-result").classList.remove("hidden");
+// STEP 3: results
+async function post(url, data) {
+  const r = await fetch(url, { method: "POST", body: data });
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(body.detail || "Something went wrong. Please try again in a minute.");
+  return body;
+}
+
+$("#check").onclick = async () => {
+  const btn = $("#check"), err = $("#check-error");
+  btn.disabled = true; btn.textContent = "AI is comparing…"; err.classList.add("hidden");
+  try {
+    const fd = new FormData(); fd.append("resume", resumeFile); fd.append("top_k", "50");
+    const ranked = await post("/api/jobs/rank", fd);
+    $("#result-list").innerHTML = ranked.map((j, i) => {
+      const v = verdict(j.score);
+      return `<div class="result" data-id="${j.id}">
+        <div class="result-top">
+          <div class="pct" style="background:${v.bg};color:${v.c}">${Math.round(j.score)}%</div>
+          <div style="flex:1"><h4>${i + 1}. ${esc(j.title)}</h4><small>${esc(j.company)}</small><br>
+            <span class="verdict" style="background:${v.bg};color:${v.c}">${v.text}</span></div>
+          <button class="btn light" style="margin:0">Why?</button>
+        </div>
+        <div class="details hidden"></div>
+      </div>`;
+    }).join("");
+    document.querySelectorAll(".result").forEach(el => el.querySelector("button").onclick = () => explain(el));
+    $("#results").classList.remove("hidden");
+  } catch (x) { err.textContent = x.message; err.classList.remove("hidden"); }
+  finally { btn.disabled = false; btn.textContent = "Check my fit"; }
 };
 
-// Status
+async function explain(el) {
+  const box = el.querySelector(".details"), btn = el.querySelector("button");
+  if (box.innerHTML) { box.classList.toggle("hidden"); return; }
+  const job = jobs.find(j => j.id == el.dataset.id);
+  btn.disabled = true; btn.textContent = "Thinking…";
+  try {
+    const fd = new FormData(); fd.append("resume", resumeFile); fd.append("job_post", job.description);
+    const d = await post("/api/match", fd);
+    const chips = (l, c) => (l || []).map(s => `<span class="chip ${c}">${esc(s)}</span>`).join("") || "<small>None</small>";
+    box.innerHTML = `
+      <h5>In short</h5><p>${esc(d.summary)}</p>
+      <h5>✅ Skills you already have</h5><div class="chips">${chips(d.matched_skills, "good")}</div>
+      <h5>❌ Skills this job wants that your resume is missing</h5><div class="chips">${chips(d.missing_skills, "bad")}</div>
+      <h5>💡 How to improve your resume for this job</h5><ol>${(d.suggestions || []).map(s => `<li>${esc(s)}</li>`).join("")}</ol>`;
+    box.classList.remove("hidden"); btn.textContent = "Hide";
+    btn.onclick = () => { box.classList.toggle("hidden"); btn.textContent = box.classList.contains("hidden") ? "Why?" : "Hide"; };
+  } catch (x) { box.innerHTML = `<div class="error">${esc(x.message)}</div>`; box.classList.remove("hidden"); btn.textContent = "Why?"; }
+  finally { btn.disabled = false; }
+}
+
 fetch("/api/health").then(r => r.json())
   .then(d => $("#status").textContent = "● Online · AI: " + d.provider)
   .catch(() => $("#status").textContent = "Server offline");
+loadJobs();
 </script>
 </body>
 </html>
