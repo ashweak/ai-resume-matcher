@@ -18,15 +18,15 @@
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body { margin: 0; font: 15px/1.55 "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink);
-         background: linear-gradient(135deg, #6d35e0 0%, #b04fa8 45%, #ee8a4f 100%) fixed; padding: 40px 24px; }
+  body { margin: 0; font: 15px/1.55 "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--card); }
   button { font: inherit; cursor: pointer; }
   .hidden { display: none !important; }
   .grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
   /* Canvas */
-  .canvas { max-width: 1240px; margin: 0 auto; background: var(--card); border-radius: 32px; overflow: hidden; box-shadow: 0 30px 80px -30px rgba(40, 10, 60, .55); }
-  .top { background: var(--blush); padding: 28px 40px 56px; }
+  /* Full-width sections; content stays centered at max 1160px */
+  .canvas { --gutter: max(40px, calc((100% - 1160px) / 2)); background: var(--card); }
+  .top { background: var(--blush); padding: 28px var(--gutter) 64px; }
 
   /* Nav */
   nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -71,7 +71,7 @@
   .v-dot { position: absolute; left: 4%; top: 46%; width: 34px; height: 34px; border-radius: 50%; background: var(--grad); color: #fff; display: grid; place-items: center; box-shadow: 0 0 0 6px rgba(255,255,255,.8); }
 
   /* Rubric strip */
-  .strip { padding: 22px 40px 30px; border-bottom: 1px solid var(--line); }
+  .strip { padding: 26px var(--gutter) 32px; border-bottom: 1px solid var(--line); }
   .strip p { text-align: center; margin: 0 0 18px; font-size: 14px; color: var(--ink-2); }
   .strip p b { color: var(--ink); }
   .rubric { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
@@ -80,7 +80,7 @@
   .rubric span { font-size: 13px; color: var(--ink-2); font-weight: 600; }
 
   /* App */
-  .app { padding: 48px 40px 56px; }
+  .app { padding: 56px var(--gutter) 64px; }
   .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
   .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
   .section-head h2 { margin: 6px 0 4px; font-size: 32px; letter-spacing: -.02em; }
@@ -176,12 +176,12 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* FAQ */
-  .faq { padding: 0 40px 48px; }
+  .faq { padding: 0 var(--gutter) 56px; }
   .faq details { border: 1px solid var(--line); border-radius: 18px; padding: 16px 20px; margin-bottom: 10px; }
   .faq summary { font-weight: 700; cursor: pointer; }
   .faq details p { margin: 10px 0 0; color: var(--ink-2); }
-  footer { text-align: center; color: rgba(255,255,255,.85); font-size: 13px; padding: 24px 0 0; }
-  footer a { color: #fff; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 16px 32px; border-top: 1px solid var(--line); }
+  footer a { color: var(--violet); }
 
   /* Responsive */
   @media (max-width: 1000px) {
@@ -190,8 +190,7 @@
     .rubric { grid-template-columns: repeat(3, 1fr); row-gap: 18px; } .links { display: none; }
   }
   @media (max-width: 640px) {
-    body { padding: 12px; } .canvas { border-radius: 22px; }
-    .top, .strip, .app, .faq { padding-left: 16px; padding-right: 16px; }
+    .canvas { --gutter: 16px; }
     .hero { margin-top: 32px; } .visual { height: 380px; }
     .rubric { grid-template-columns: repeat(2, 1fr); }
     .how, .two, .checklist { grid-template-columns: 1fr; }
