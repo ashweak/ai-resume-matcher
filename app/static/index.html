@@ -314,6 +314,9 @@ async function details(el) {
   }
   const job = jobs.find(j => j.id == el.dataset.id);
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>AI is reading';
+  box.innerHTML = '<p class="muted"><span class="spinner"></span>The AI is comparing your resume with this job. This usually takes 5–15 seconds…</p>';
+  box.classList.remove("hidden");
+  const slow = setTimeout(() => { box.querySelector("p") && (box.querySelector("p").innerHTML = '<span class="spinner"></span>Still working. The free AI server is busy, so this one is taking longer…'); }, 15000);
   try {
     const fd = new FormData(); fd.append("resume", resume); fd.append("job_post", job.description);
     const d = await api("/api/match", { method: "POST", body: fd });
@@ -328,7 +331,7 @@ async function details(el) {
     box.dataset.loaded = 1; box.classList.remove("hidden"); btn.textContent = "Hide details";
   } catch (x) {
     box.innerHTML = `<div class="error">${esc(x.message)}</div>`; box.classList.remove("hidden"); btn.textContent = "Try again";
-  } finally { btn.disabled = false; }
+  } finally { clearTimeout(slow); btn.disabled = false; }
 }
 
 api("/api/health")

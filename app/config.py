@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     gemini_chat_model: str = "gemini-3.8-flash"
     gemini_embed_model: str = "gemini-embedding-001"
     gemini_fallback_models: str = ""
+    # How much the model "thinks" before answering: minimal | low | medium | high. Lower = faster.
+    gemini_thinking_level: str = "low"
 
     anthropic_api_key: str = ""
     claude_chat_model: str = "claude-haiku-5-5"

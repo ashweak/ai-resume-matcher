@@ -14,5 +14,7 @@ services:
         value: gemini-3.8-flash
       - key: GEMINI_FALLBACK_MODELS
         value: gemini-3.5-flash,gemini-flash-lite-latest
+      - key: GEMINI_THINKING_LEVEL
+        value: low
       - key: AI_CALLS_PER_HOUR
         value: "30"

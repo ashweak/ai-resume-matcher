@@ -7,7 +7,8 @@ def get_provider(settings: Settings) -> AIProvider:
         from app.providers.gemini import GeminiProvider
 
         return GeminiProvider(
-            settings.gemini_api_key, settings.gemini_chat_model, settings.gemini_embed_model, settings.gemini_fallback_models
+            settings.gemini_api_key, settings.gemini_chat_model, settings.gemini_embed_model,
+            settings.gemini_fallback_models, settings.gemini_thinking_level,
         )
 
     if settings.ai_provider == "claude":
@@ -15,7 +16,8 @@ def get_provider(settings: Settings) -> AIProvider:
         from app.providers.gemini import GeminiProvider
 
         embedder = GeminiProvider(
-            settings.gemini_api_key, settings.gemini_chat_model, settings.gemini_embed_model, settings.gemini_fallback_models
+            settings.gemini_api_key, settings.gemini_chat_model, settings.gemini_embed_model,
+            settings.gemini_fallback_models, settings.gemini_thinking_level,
         )
         return ClaudeProvider(settings.anthropic_api_key, settings.claude_chat_model, embedder)
 

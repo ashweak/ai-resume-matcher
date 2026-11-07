@@ -3,11 +3,11 @@ import math
 from app.providers.base import AIProvider
 
 ANALYSIS_PROMPT = """You are a hiring assistant. Compare the RESUME to the JOB POST.
-Return JSON with exactly these keys:
-- "matched_skills": list of skills found in both
-- "missing_skills": list of skills the job wants but the resume lacks
-- "suggestions": list of 3-5 specific resume improvements
-- "summary": one short paragraph on overall fit
+Be brief. Return JSON with exactly these keys:
+- "matched_skills": up to 8 short skill names found in both
+- "missing_skills": up to 8 short skill names the job wants but the resume lacks
+- "suggestions": 3 specific, one-sentence resume improvements
+- "summary": 1-2 sentences on overall fit
 
 RESUME:
 {resume}
@@ -29,6 +29,7 @@ def match_resume(provider: AIProvider, resume: str, job: str) -> dict:
     score = round(max(0.0, cosine_similarity(resume_vec, job_vec)) * 100, 1)
 
     # 2) Structured analysis from the LLM
-    analysis = provider.generate_json(ANALYSIS_PROMPT.format(resume=resume, job=job))
+    # Trim very long inputs: faster, and keeps us inside free-tier token limits.
+    analysis = provider.generate_json(ANALYSIS_PROMPT.format(resume=resume[:8000], job=job[:8000]))
 
     return {"match_score": score, **analysis}
