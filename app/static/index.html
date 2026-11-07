@@ -26,7 +26,8 @@
 
   /* Layout */
   .layout { max-width: 1180px; margin: 0 auto; padding: 24px 20px 48px; display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
-  .side { display: grid; gap: 16px; position: sticky; top: 84px; }
+  .side { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; position: sticky; top: 84px; }
+  .side .card { min-width: 0; }
   .layout > * { min-width: 0; }
   @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .side { position: static; } }
   @media (max-width: 600px) { header { position: static; } .bar, .layout { padding-left: 16px; padding-right: 16px; } .logo { font-size: 15px; } .status { font-size: 12px; } }
@@ -61,10 +62,12 @@
   .form input, .form textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-weight: 400; background: #fff; color: var(--ink); }
   .form textarea { min-height: 130px; resize: vertical; }
   .form .actions { display: flex; gap: 8px; justify-content: flex-end; }
-  .jobs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 300px; overflow-y: auto; }
+  .jobs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; max-height: 340px; overflow-y: auto; }
   .jobs li { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; }
   .jobs li div { flex: 1; min-width: 0; }
-  .jobs b, .jobs small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jobs b { display: block; overflow-wrap: anywhere; line-height: 1.35; }
+  .jobs small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jobs .btn { flex: none; }
   .jobs small { color: var(--muted); }
   .empty { text-align: center; padding: 14px; color: var(--muted); font-size: 14px; }
 
@@ -88,7 +91,8 @@
   .rank { color: var(--muted); font-weight: 700; width: 18px; }
   .pct { flex: none; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; }
   .result-row .info { flex: 1; min-width: 0; }
-  .result-row h3 { margin: 0; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .result-row h3 { margin: 0; font-size: 15px; overflow-wrap: anywhere; line-height: 1.35; }
+  .result-row .btn { flex: none; }
   .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 9px; border-radius: 99px; margin-top: 3px; }
   .details { border-top: 1px solid var(--line); padding: 16px; display: grid; gap: 14px; background: #fcfcfd; }
   .details h4 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }

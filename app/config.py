@@ -9,11 +9,13 @@ class Settings(BaseSettings):
     ai_provider: str = "gemini"
 
     gemini_api_key: str = ""
-    gemini_chat_model: str = "gemini-3.8-flash"
+    gemini_chat_model: str = "gemini-flash-lite-latest"  # Lite = fastest answers
     gemini_embed_model: str = "gemini-embedding-001"
-    gemini_fallback_models: str = ""
+    gemini_fallback_models: str = "gemini-3.8-flash,gemini-3.5-flash"
     # How much the model "thinks" before answering: minimal | low | medium | high. Lower = faster.
     gemini_thinking_level: str = "low"
+    # Give up on a slow model after this many seconds and try the next one.
+    gemini_timeout_seconds: int = 20
 
     anthropic_api_key: str = ""
     claude_chat_model: str = "claude-haiku-5-5"
