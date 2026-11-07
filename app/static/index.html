@@ -163,7 +163,11 @@
   .result.open { box-shadow: var(--shadow); }
   .result-row { display: flex; align-items: center; gap: 14px; padding: 16px 18px; }
   .rank { color: var(--muted); font-weight: 800; width: 18px; }
-  .pct { flex: none; width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 16px; }
+  .pct { flex: none; width: 62px; height: 62px; border-radius: 50%; display: grid; place-content: center; text-align: center; line-height: 1.05;
+         background: var(--blush); color: var(--violet); }
+  .pct b { font-size: 17px; font-weight: 800; } .pct small { display: block; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; opacity: .8; }
+  .pill.wait { background: #f3f1f4; color: var(--muted); }
+  .note { background: var(--blush); border-radius: 14px; padding: 10px 14px; font-size: 13px; color: var(--ink-2); margin-bottom: 12px; }
   .info { flex: 1; min-width: 0; }
   .info h4 { margin: 0; font-size: 16px; overflow-wrap: anywhere; line-height: 1.35; }
   .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 99px; margin-top: 4px; }
@@ -306,7 +310,7 @@
       <article><span class="num">3</span><h3>Get scored &amp; improve</h3><p>See which jobs fit you best, then open any job for a full recruiter-style scorecard and a fix list.</p></article>
     </div>
     <div class="two-scores">
-      <div><b>⚡ Quick match</b><p>Compares the meaning of your resume with every saved job in seconds, so you know which ones to focus on first.</p></div>
+      <div><b>⚡ Quick match (similarity)</b><p>Sorts all your saved jobs in seconds by how alike they are to your resume, so you know which to look at first. It's not a verdict.</p></div>
       <div><b>📋 Recruiter score</b><p>A deeper review of one job: 6 areas scored like a recruiter would, plus missing skills and what to fix first.</p></div>
     </div>
   </section>
@@ -390,14 +394,12 @@
         <section id="results" class="hidden">
           <div class="stats">
             <div class="stat"><small>Jobs checked</small><div id="st-count">0</div></div>
-            <div class="stat"><small>Best match</small><div id="st-best">–</div></div>
-            <div class="stat"><small>Strong matches</small><div id="st-strong">0</div></div>
+            <div class="stat"><small>Scorecards done</small><div id="st-done">0</div></div>
+            <div class="stat"><small>Best recruiter score</small><div id="st-best">–</div></div>
           </div>
-          <div class="legend">
-            <span><i style="background:var(--good)"></i>Strong: apply now</span>
-            <span><i style="background:var(--mid)"></i>Fair: improve your resume first</span>
-            <span><i style="background:var(--bad)"></i>Weak: not a good fit yet</span>
-          </div>
+          <p class="note"><b>Similarity</b> only shows how alike the texts are, so jobs in the same field all score high. Use it to decide which jobs to look at first.
+            Open <b>Full scorecard</b> for the real verdict: <span style="color:var(--good);font-weight:700">75+ strong</span> ·
+            <span style="color:var(--mid);font-weight:700">50–74 decent</span> · <span style="color:var(--bad);font-weight:700">under 50 not a fit yet</span>.</p>
           <div id="list"></div>
         </section>
       </main>
@@ -407,8 +409,8 @@
   <!-- ===== FAQ ===== -->
   <section class="faq" id="faq">
     <div class="section-head"><div><span class="eyebrow grad-text">FAQ</span><h2>Good to know</h2></div></div>
-    <details><summary>What's the difference between "Quick match" and "Recruiter score"?</summary>
-      <p>Quick match compares the meaning of your resume and the job post using AI embeddings. It's instant, and good for ranking many jobs. The Recruiter score is a deeper review: the AI grades 6 areas recruiters and ATS software check, and the app combines them with fixed weights into a score out of 100.</p></details>
+    <details><summary>Why can a job show 80% similar but a low recruiter score?</summary>
+      <p>Similarity (Quick match) compares the meaning of your resume and the job post using AI embeddings. It's instant and good for sorting many jobs, but jobs in the same field all look similar, so it is not a verdict. The Recruiter score is a deeper review: the AI grades 6 areas recruiters and ATS software check, and the app combines them with fixed weights into a score out of 100.</p></details>
     <details><summary>How is the Recruiter score calculated?</summary>
       <p>Skills &amp; keywords 30%, relevant experience &amp; projects 25%, measurable impact 15%, education 10%, complete sections 10%, and clarity 10%. Facts like contact info, sections and numbers in your bullets are measured by code, not guessed by the AI.</p></details>
     <details><summary>Is my resume saved?</summary>
@@ -436,8 +438,7 @@ async function api(url, opts = {}) {
   return body;
 }
 
-// Embedding similarity runs high, so its bands start higher than the recruiter score's.
-const quickBand = s => s >= 80 ? ["Strong match", "good"] : s >= 65 ? ["Fair match", "mid"] : ["Weak match", "bad"];
+// Similarity (embeddings) is only used for ordering. Only the recruiter score gives a verdict.
 const scoreBand = s => s >= 75 ? "good" : s >= 50 ? "mid" : "bad";
 
 let resume = null, jobs = [];
@@ -549,29 +550,44 @@ $("#check").onclick = async () => {
     const fd = new FormData(); fd.append("resume", resume); fd.append("top_k", "100");
     const ranked = await api("/api/jobs/rank", { method: "POST", body: fd });
     $("#st-count").textContent = ranked.length;
-    $("#st-best").textContent = ranked[0] ? Math.round(ranked[0].score) + "%" : "–";
-    $("#st-strong").textContent = ranked.filter(r => r.score >= 80).length;
-    $("#list").innerHTML = ranked.map((j, i) => {
-      const [label, k] = quickBand(j.score);
-      return `<article class="result" data-id="${j.id}">
+    scored = {}; updateStats();
+    $("#list").innerHTML = ranked.map((j, i) => `<article class="result" data-id="${j.id}" data-sim="${Math.round(j.score)}">
         <div class="result-row">
           <span class="rank">${i + 1}</span>
-          <div class="pct" style="background:var(--${k}-bg);color:var(--${k})">${Math.round(j.score)}%</div>
+          <div class="pct"><b>${Math.round(j.score)}%</b><small>similar</small></div>
           <div class="info"><h4>${esc(j.title)}</h4><span class="muted">${esc(j.company || "")}</span><br>
-            <span class="pill" style="background:var(--${k}-bg);color:var(--${k})">${label}</span> <span class="muted">Quick match</span></div>
+            <span class="pill wait">Not scored yet</span> <span class="muted">Open the scorecard for the verdict</span></div>
           <button class="btn-dark">Full scorecard</button>
         </div>
         <div class="details hidden"></div>
-      </article>`;
-    }).join("");
+      </article>`).join("");
     document.querySelectorAll(".result").forEach(el => el.querySelector("button").onclick = () => details(el));
     $("#app-empty").classList.add("hidden"); $("#results").classList.remove("hidden");
-    $("#hint").textContent = "Open \"Full scorecard\" on a job to see how a recruiter would rate you.";
+    $("#hint").textContent = "Jobs are sorted by similarity. Open \"Full scorecard\" to see how a recruiter would rate you.";
   } catch (x) { err.textContent = x.message; err.classList.remove("hidden"); }
   finally { btn.innerHTML = '<span class="arrow">→</span>Check again'; btn.disabled = !(resume && jobs.length); }
 };
 
 // ---- Full scorecard ----
+let scored = {};
+function updateStats() {
+  const vals = Object.values(scored);
+  $("#st-done").textContent = vals.length;
+  $("#st-best").textContent = vals.length ? Math.round(Math.max(...vals)) + "/100" : "–";
+}
+const VERDICT = { good: "Strong candidate", mid: "Decent fit", bad: "Not a strong fit yet" };
+
+// After a scorecard loads, the job's card shows the recruiter score instead of similarity.
+function markScored(el, score) {
+  const band = scoreBand(score);
+  scored[el.dataset.id] = score; updateStats();
+  const pct = el.querySelector(".pct");
+  pct.style.background = `var(--${band}-bg)`; pct.style.color = `var(--${band})`;
+  pct.innerHTML = `<b>${Math.round(score)}</b><small>of 100</small>`;
+  el.querySelector(".info .pill").outerHTML = `<span class="pill" style="background:var(--${band}-bg);color:var(--${band})">${VERDICT[band]}</span>`;
+  el.querySelector(".info .pill + .muted").textContent = `Recruiter score · ${el.dataset.sim}% similar`;
+}
+
 function renderScorecard(d) {
   const chips = (l, c) => (l || []).map(s => `<span class="chip ${c}">${esc(s)}</span>`).join("") || '<span class="muted">None found</span>';
   const band = scoreBand(d.recruiter_score);
@@ -628,6 +644,7 @@ async function details(el) {
     const fd = new FormData(); fd.append("resume", resume); fd.append("job_post", job.description);
     const d = await api("/api/match", { method: "POST", body: fd });
     box.innerHTML = renderScorecard(d); box.dataset.loaded = 1; btn.textContent = "Hide";
+    markScored(el, d.recruiter_score);
   } catch (x) {
     box.innerHTML = `<div class="error">${esc(x.message)}</div>`; btn.textContent = "Try again";
   } finally { clearTimeout(slow); btn.disabled = false; }
