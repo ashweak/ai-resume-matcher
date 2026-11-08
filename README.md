@@ -61,7 +61,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env        # add your Gemini key from aistudio.google.com
 uvicorn app.main:app --reload
-# open http://127.0.0.1:8000  (app)  or  /docs  (API)
+# open http://127.0.0.1:8000
 pytest
 ```
 

@@ -79,3 +79,7 @@ def test_rate_limiter():
     limiter = RateLimiter(max_calls=2)
     assert [limiter.allow("ip") for _ in range(3)] == [True, True, False]
     assert RateLimiter(max_calls=0).allow("ip")
+
+
+def test_api_docs_are_hidden():
+    assert client.get("/docs").status_code == 404
